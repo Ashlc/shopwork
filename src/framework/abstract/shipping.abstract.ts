@@ -1,7 +1,8 @@
-import { IShipment } from 'src/interfaces/models';
+import { IAddress, IShipment } from 'src/interfaces/models';
 import { IShippingService } from 'src/interfaces/services';
 
 abstract class ShippingService implements IShippingService {
+  abstract calculateShippingCost(userId: string, address: IAddress): number;
   abstract createShipment(
     orderId: string,
     shipmentData: Omit<IShipment, 'id' | 'createdAt' | 'updatedAt' | 'status'>,

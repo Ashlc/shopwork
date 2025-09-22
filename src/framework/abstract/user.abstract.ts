@@ -1,4 +1,4 @@
-import { IUser } from 'src/interfaces/models';
+import { IAddress, IUser } from 'src/interfaces/models';
 import { IUserService } from 'src/interfaces/services';
 
 abstract class UserService implements IUserService {
@@ -13,6 +13,8 @@ abstract class UserService implements IUserService {
   abstract updateUser(userId: string, userData: Partial<IUser>): Promise<IUser>;
 
   abstract deleteUser(userId: string): Promise<void>;
+
+  abstract getAddress(userId: string): Promise<IAddress>;
 }
 
 export default UserService;

@@ -50,9 +50,12 @@ export interface IOrder extends ITimestamps {
   id: string;
   userId: string;
   products: IProduct[];
+  productTotal: number;
+  shippingCost?: number;
+  taxes?: number;
   totalAmount: number;
-  orderDate: string;
   status: OrderStatus;
+  orderDate?: string;
   shipmentId?: string;
   paymentId?: string;
 }
@@ -90,9 +93,15 @@ export interface IShipment extends ITimestamps {
   status: ShipmentStatus;
 }
 
+export interface ICartItem extends ITimestamps {
+  id: string;
+  productId: string;
+  product: IProduct;
+  quantity: number;
+}
+
 export interface ICart extends ITimestamps {
   id: string;
   userId: string;
-  products: IProduct[];
-  totalAmount: number;
+  products: ICartItem[];
 }

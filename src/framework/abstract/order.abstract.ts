@@ -4,7 +4,10 @@ import { IOrderService } from 'src/interfaces/services';
 abstract class OrderService implements IOrderService {
   abstract createOrder(
     userId: string,
-    orderData: Omit<IOrder, 'id' | 'status' | 'orderDate'>,
+    orderData: Omit<
+      IOrder,
+      'id' | 'status' | 'orderDate' | 'createdAt' | 'updatedAt'
+    >,
   ): Promise<IOrder>;
   abstract getOrder(orderId: string): Promise<IOrder>;
   abstract updateOrder(
@@ -12,7 +15,7 @@ abstract class OrderService implements IOrderService {
     orderData: Partial<IOrder>,
   ): Promise<IOrder>;
   abstract cancelOrder(orderId: string): Promise<void>;
-  abstract listOrdersByUser(userId: string): Promise<IOrder[]>;
+  abstract listOrdersByUser(userId: string): Promise<any[]>;
 }
 
 export default OrderService;

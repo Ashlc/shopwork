@@ -1,5 +1,6 @@
 import { PaymentMethod } from 'src/types';
 import {
+  IAddress,
   ICart,
   ICategory,
   IOrder,
@@ -23,6 +24,7 @@ export interface IUserService {
   getUserInfo(userId: string): Promise<IUser>;
   updateUser(userId: string, userData: Partial<IUser>): Promise<IUser>;
   deleteUser(userId: string): Promise<void>;
+  getAddress(userId: string): Promise<IAddress>;
 }
 
 export interface IProductService {
@@ -79,7 +81,10 @@ export interface IReviewService {
 export interface IOrderService {
   createOrder(
     userId: string,
-    orderData: Omit<IOrder, 'id' | 'status' | 'orderDate'>,
+    orderData: Omit<
+      IOrder,
+      'id' | 'status' | 'orderDate' | 'createdAt' | 'updatedAt'
+    >,
   ): Promise<IOrder>;
   getOrder(orderId: string): Promise<IOrder>;
   updateOrder(orderId, orderData: Partial<IOrder>): Promise<IOrder>;
@@ -105,4 +110,5 @@ export interface IShippingService {
     shipmentData: Partial<IShipment>,
   ): Promise<IShipment>;
   trackShipment(shipmentId: string): Promise<IShipment>;
+  calculateShippingCost(userId: string, address: IAddress): number;
 }
