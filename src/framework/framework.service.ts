@@ -3,11 +3,13 @@ import type {
   ICartService,
   ICatalogService,
   IOrderService,
+  IPaymentService,
   IProductService,
   IReviewService,
   IShippingService,
   IUserService,
 } from 'src/interfaces/services';
+import { PaymentMethod } from 'src/types';
 
 @Injectable()
 export class FrameworkService {
@@ -19,8 +21,9 @@ export class FrameworkService {
     private readonly catalogService: ICatalogService,
     private readonly orderService: IOrderService,
     private readonly shippingService: IShippingService,
+    private readonly paymentService: IPaymentService,
   ) {}
-  async createOrder(userId: string) {
+  async createOrder(userId: string, method: PaymentMethod) {
     const cart = await this.cartService.getCart(userId);
 
     if (!cart || cart.products.length === 0) {
@@ -42,7 +45,7 @@ export class FrameworkService {
 
     const tax = 0.1 * total;
 
-    const orderData = {
+    const data = {
       userId,
       products,
       productTotal: total,
@@ -51,10 +54,14 @@ export class FrameworkService {
       totalAmount: total + shipping + tax,
     };
 
-    const order = await this.orderService.createOrder(userId, orderData);
+    const order = await this.orderService.createOrder(userId, data);
+    const payment = this.paymentService.openPaymentProcess(order.id, method);
 
     await this.cartService.clearCart(userId);
 
-    return order;
+    return {
+      order,
+      payment,
+    };
   }
 }
