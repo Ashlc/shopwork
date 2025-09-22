@@ -1,0 +1,12 @@
+{
+  "material-icon-theme.files.associations": {
+    "*.decorator.ts": "nest-decorator",
+    "*.guard.ts": "nest-guard",
+    "*.resolver.ts": "nest-resolver",
+    "*.controller.ts": "nest-controller",
+    "*.service.ts": "nest-service",
+    "*.module.ts": "nest-module",
+    "*.entity.ts": "nest-entity",
+    "*.dto.ts": "nest-dto"
+  }
+}
