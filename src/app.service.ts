@@ -13,17 +13,14 @@ import { UserService } from './modules/user/user.service';
 @Injectable()
 export class AppService {
   core = new FrameworkService(
-    CartService,
-    CatalogService,
-    MailService,
-    OrderService,
-    PaymentService,
-    ProductService,
-    ReviewService,
-    ShippingService,
-    UserService
+    new CartService(),
+    new CatalogService(),
+    new MailService(),
+    new OrderService(),
+    new PaymentService(),
+    new ProductService(),
+    new ReviewService(),
+    new ShippingService(),
+    new UserService(),
   );
-  getHello(): string {
-    return 'Hello World!';
-  }
 }
