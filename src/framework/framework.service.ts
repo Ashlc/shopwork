@@ -1,7 +1,9 @@
 import { Injectable } from '@nestjs/common';
+import { IShipment } from 'src/interfaces/models';
 import type {
   ICartService,
   ICatalogService,
+  IMailService,
   IOrderService,
   IPaymentService,
   IProductService,
@@ -14,16 +16,18 @@ import { PaymentMethod } from 'src/types';
 @Injectable()
 export class FrameworkService {
   constructor(
-    private readonly userService: IUserService,
-    private readonly productService: IProductService,
     private readonly cartService: ICartService,
-    private readonly reviewService: IReviewService,
     private readonly catalogService: ICatalogService,
+    private readonly mailService: IMailService,
     private readonly orderService: IOrderService,
-    private readonly shippingService: IShippingService,
     private readonly paymentService: IPaymentService,
+    private readonly productService: IProductService,
+    private readonly reviewService: IReviewService,
+    private readonly shippingService: IShippingService,
+    private readonly userService: IUserService,
   ) {}
-  async createOrder(userId: string, method: PaymentMethod) {
+
+  async placeOrder(userId: string, method: PaymentMethod) {
     const cart = await this.cartService.getCart(userId);
 
     if (!cart || cart.products.length === 0) {
@@ -55,7 +59,10 @@ export class FrameworkService {
     };
 
     const order = await this.orderService.createOrder(userId, data);
-    const payment = this.paymentService.openPaymentProcess(order.id, method);
+    const payment = await this.paymentService.openPaymentProcess(
+      order.id,
+      method,
+    );
 
     await this.cartService.clearCart(userId);
 
@@ -63,5 +70,49 @@ export class FrameworkService {
       order,
       payment,
     };
+  }
+
+  async updateShipment(shipmentId: string, status: Partial<IShipment>) {
+    const shipment = await this.shippingService.updateShipment(
+      shipmentId,
+      status,
+    );
+
+    if (shipment && shipment.userId) {
+      await this.mailService.sendShippingInformation(shipment.userId, shipment);
+    }
+
+    return shipment;
+  }
+
+  async confirmOrder(paymentId: string) {
+    const payment = await this.paymentService.getPaymentDetails(paymentId);
+    if (payment.status !== 'completed') {
+      throw new Error('Payment not completed');
+    }
+
+    if (!payment.userId) {
+      throw new Error('User ID not found');
+    }
+
+    await this.mailService.sendOrderConfirmation(
+      payment.userId,
+      payment.orderId,
+    );
+
+    return payment;
+  }
+
+  async closeOrder(orderId: string) {
+    const order = await this.orderService.getOrder(orderId);
+    if (!order) {
+      throw new Error('Order not found');
+    }
+
+    if (order.status !== 'delivered' && order.status !== 'cancelled') {
+      throw new Error('Order not delivered or cancelled yet');
+    }
+
+    return this.mailService.sendClosureConfirmation(order.userId, order.id);
   }
 }

@@ -34,6 +34,14 @@ export interface IProductService {
   deleteProduct(productId: string): Promise<void>;
 }
 
+export interface IMailService {
+  sendEmail(to: string, subject: string, body: string): Promise<void>;
+  sendOrderConfirmation(userId: string, orderId: string): Promise<void>;
+  sendClosureConfirmation(userId: string, orderId: string): Promise<void>;
+  sendShippingInformation(userId: string, shipment: IShipment): Promise<void>;
+  sendPasswordResetEmail(userId: string, resetToken: string): Promise<void>;
+}
+
 // ============================================================================
 // CATALOG SERVICES
 // Product discovery and categorization services (depends on products)
@@ -96,7 +104,7 @@ export interface IPaymentService {
   openPaymentProcess(orderId: string, method: PaymentMethod): Promise<string>;
   processPayment(paymentData: Omit<IPayment, 'id'>): Promise<IPayment>;
   refundPayment(paymentId: string): Promise<any>;
-  getPaymentStatus(paymentId: string): Promise<string>;
+  getPaymentDetails(paymentId: string): Promise<IPayment>;
 }
 
 export interface IShippingService {

@@ -6,12 +6,28 @@ import {
   ShipmentStatus,
 } from 'src/types';
 
+// ============================================================================
+// CORE TYPES
+// Primitive/shared types used across models
+// ============================================================================
+
 export interface ITimestamps {
   createdAt: string;
   updatedAt?: string;
 }
 
-export interface IAddress extends ITimestamps {
+export interface Identifiable {
+  id: string;
+}
+
+export interface IEntity extends ITimestamps, Identifiable {}
+
+// ============================================================================
+// FOUNDATION MODELS
+// Core entity models with no dependencies on other business entities
+// ============================================================================
+
+export interface IAddress extends IEntity {
   street: string;
   city: string;
   state: string;
@@ -19,7 +35,7 @@ export interface IAddress extends ITimestamps {
   country: string;
 }
 
-export interface IUser extends ITimestamps {
+export interface IUser extends IEntity {
   id: string;
   name: string;
   email: string;
@@ -31,7 +47,7 @@ export interface IUser extends ITimestamps {
   address: IAddress;
 }
 
-export interface IProduct extends ITimestamps {
+export interface IProduct extends IEntity {
   id: string;
   name: string;
   description: string;
@@ -41,12 +57,54 @@ export interface IProduct extends ITimestamps {
   imageUrl?: string;
 }
 
+// ============================================================================
+// CATALOG MODELS
+// Product discovery and categorization models (depend on products)
+// ============================================================================
+
+export interface ICategory extends IEntity {
+  id: string;
+  name: string;
+  description?: string;
+}
+
 export interface IRecommendation {
   idUser: string;
   product: IProduct;
 }
 
-export interface IOrder extends ITimestamps {
+// ============================================================================
+// USER INTERACTION MODELS
+// Models for user interactions with products
+// ============================================================================
+
+export interface IReview extends IEntity {
+  id: string;
+  userId: string;
+  productId: string;
+  rating: number;
+  comment: string;
+}
+
+export interface ICartItem extends IEntity {
+  id: string;
+  productId: string;
+  product: IProduct;
+  quantity: number;
+}
+
+export interface ICart extends IEntity {
+  id: string;
+  userId: string;
+  products: ICartItem[];
+}
+
+// ============================================================================
+// TRANSACTION MODELS
+// Order fulfillment and payment processing models (depend on users, products, and cart)
+// ============================================================================
+
+export interface IOrder extends IEntity {
   id: string;
   userId: string;
   products: IProduct[];
@@ -60,30 +118,17 @@ export interface IOrder extends ITimestamps {
   paymentId?: string;
 }
 
-export interface IReview extends ITimestamps {
-  id: string;
-  userId: string;
-  productId: string;
-  rating: number;
-  comment: string;
-}
-
-export interface ICategory extends ITimestamps {
-  id: string;
-  name: string;
-  description?: string;
-}
-
-export interface IPayment extends ITimestamps {
+export interface IPayment extends IEntity {
   id: string;
   orderId: string;
+  userId?: string;
   amount: number;
   paymentDate: string;
   paymentMethod: PaymentMethod;
   status: PaymentStatus;
 }
 
-export interface IShipment extends ITimestamps {
+export interface IShipment extends IEntity {
   id: string;
   orderId: string;
   shipmentDate: string;
@@ -91,17 +136,5 @@ export interface IShipment extends ITimestamps {
   carrier: string;
   trackingNumber: string;
   status: ShipmentStatus;
-}
-
-export interface ICartItem extends ITimestamps {
-  id: string;
-  productId: string;
-  product: IProduct;
-  quantity: number;
-}
-
-export interface ICart extends ITimestamps {
-  id: string;
-  userId: string;
-  products: ICartItem[];
+  userId?: string;
 }

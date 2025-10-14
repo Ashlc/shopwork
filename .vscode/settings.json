@@ -8,5 +8,12 @@
     "*.module.ts": "nest-module",
     "*.entity.ts": "nest-entity",
     "*.dto.ts": "nest-dto"
+  },
+  "material-icon-theme.folders.associations": {
+    "framework": "core",
+    "abstract": "decorators",
+    "cart": "",
+    "mail": "",
+    "review": "",
   }
 }
