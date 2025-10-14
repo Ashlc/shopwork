@@ -1,7 +1,29 @@
-import { Controller } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param } from '@nestjs/common';
 import { PaymentService } from './payment.service';
+import { PaymentMethod } from 'src/types';
 
-@Controller('payment')
+@Controller('payments')
 export class PaymentController {
   constructor(private readonly paymentService: PaymentService) {}
+
+  @Post('process')
+  async openPaymentProcess(@Body() body: { orderId: string; method: PaymentMethod }) {
+    const paymentId = await this.paymentService.openPaymentProcess(body.orderId, body.method);
+    return { paymentId };
+  }
+
+  @Post()
+  async processPayment(@Body() paymentData: any) {
+    return this.paymentService.processPayment(paymentData);
+  }
+
+  @Get(':id')
+  async getPaymentDetails(@Param('id') id: string) {
+    return this.paymentService.getPaymentDetails(id);
+  }
+
+  @Post(':id/refund')
+  async refundPayment(@Param('id') id: string) {
+    return this.paymentService.refundPayment(id);
+  }
 }
