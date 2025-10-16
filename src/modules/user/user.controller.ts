@@ -10,7 +10,7 @@ import {
 import type { IUser } from 'src/interfaces/models';
 import { UserService } from './user.service';
 
-@Controller('users') // Changed from 'user' to 'users' for RESTful convention
+@Controller('users')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 

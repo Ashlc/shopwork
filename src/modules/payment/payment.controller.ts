@@ -3,7 +3,7 @@ import type { IPayment } from 'src/interfaces/models';
 import type { PaymentMethod } from 'src/types';
 import { PaymentService } from './payment.service';
 
-@Controller('payments') // Changed to plural for RESTful convention
+@Controller('payments')
 export class PaymentController {
   constructor(private readonly paymentService: PaymentService) {}
 

@@ -10,7 +10,7 @@ import {
 import type { IProduct } from 'src/interfaces/models';
 import { ProductService } from './product.service';
 
-@Controller('products') // Changed to plural for RESTful convention
+@Controller('products')
 export class ProductController {
   constructor(private readonly productService: ProductService) {}
 

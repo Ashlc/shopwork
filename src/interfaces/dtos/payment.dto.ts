@@ -8,7 +8,7 @@ export interface CreatePaymentDto {
 
 export interface ProcessPaymentDto {
   paymentId: string;
-  token: string; // Payment processor token
+  token: string;
 }
 
 export interface PaymentResponseDto {
@@ -24,5 +24,5 @@ export interface PaymentResponseDto {
 
 export interface RefundPaymentDto {
   reason?: string;
-  amount?: number; // For partial refunds
+  amount?: number;
 }
