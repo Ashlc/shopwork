@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
+import BaseOrderService from 'src/framework/abstract/order.abstract';
 import { IOrder } from 'src/interfaces/models';
-import { IOrderService } from 'src/interfaces/services';
 
 @Injectable()
-export class OrderService implements IOrderService {
+export class OrderService extends BaseOrderService {
   createOrder(
     userId: string,
     orderData: Omit<

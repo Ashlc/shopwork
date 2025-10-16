@@ -7,7 +7,7 @@
     "*.service.ts": "nest-service",
     "*.module.ts": "nest-module",
     "*.entity.ts": "nest-entity",
-    "*.dto.ts": "nest-dto"
+    "*.dto.ts": "nest-guard"
   },
   "material-icon-theme.folders.associations": {
     "framework": "core",

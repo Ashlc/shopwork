@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
+import BaseUserService from 'src/framework/abstract/user.abstract';
 import { IAddress, IUser } from 'src/interfaces/models';
-import { IUserService } from 'src/interfaces/services';
 
 @Injectable()
-export class UserService implements IUserService {
+export class UserService extends BaseUserService {
   createUser(
     userData: Omit<IUser, 'id' | 'createdAt' | 'updatedAt' | 'role'> & {
       password: string;

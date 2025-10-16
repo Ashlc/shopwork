@@ -1,30 +1,28 @@
 import { Injectable } from '@nestjs/common';
 import { IShipment } from 'src/interfaces/models';
-import type {
-  ICartService,
-  ICatalogService,
-  IMailService,
-  IOrderService,
-  IPaymentService,
-  IProductService,
-  IReviewService,
-  IShippingService,
-  IUserService,
-} from 'src/interfaces/services';
 import { PaymentMethod } from 'src/types';
+import BaseCartService from './abstract/cart.abstract';
+import BaseCatalogService from './abstract/catalog.abstract';
+import BaseMailService from './abstract/mail.abstract';
+import BaseOrderService from './abstract/order.abstract';
+import BasePaymentService from './abstract/payment.abstract';
+import BaseProductService from './abstract/product.abstract';
+import BaseReviewService from './abstract/review.abstract';
+import BaseShippingService from './abstract/shipping.abstract';
+import BaseUserService from './abstract/user.abstract';
 
 @Injectable()
 export class FrameworkService {
   constructor(
-    private readonly cartService: ICartService,
-    private readonly catalogService: ICatalogService,
-    private readonly mailService: IMailService,
-    private readonly orderService: IOrderService,
-    private readonly paymentService: IPaymentService,
-    private readonly productService: IProductService,
-    private readonly reviewService: IReviewService,
-    private readonly shippingService: IShippingService,
-    private readonly userService: IUserService,
+    private readonly cartService: BaseCartService,
+    private readonly catalogService: BaseCatalogService,
+    private readonly mailService: BaseMailService,
+    private readonly orderService: BaseOrderService,
+    private readonly paymentService: BasePaymentService,
+    private readonly productService: BaseProductService,
+    private readonly reviewService: BaseReviewService,
+    private readonly shippingService: BaseShippingService,
+    private readonly userService: BaseUserService,
   ) {}
 
   async placeOrder(userId: string, method: PaymentMethod) {

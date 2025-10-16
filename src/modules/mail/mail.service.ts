@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { IMailService } from 'src/interfaces/services';
+import BaseMailService from 'src/framework/abstract/mail.abstract';
 
 @Injectable()
-export class MailService implements IMailService {
+export class MailService extends BaseMailService {
   sendEmail(to: string, subject: string, body: string): Promise<void> {
     throw new Error('Method not implemented.');
   }

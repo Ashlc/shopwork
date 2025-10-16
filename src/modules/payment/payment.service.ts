@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
+import BasePaymentService from 'src/framework/abstract/payment.abstract';
 import { IPayment } from 'src/interfaces/models';
-import { IPaymentService } from 'src/interfaces/services';
 import { PaymentMethod } from 'src/types';
 
 @Injectable()
-export class PaymentService implements IPaymentService {
+export class PaymentService extends BasePaymentService {
   openPaymentProcess(orderId: string, method: PaymentMethod): Promise<string> {
     throw new Error('Method not implemented.');
   }
@@ -13,7 +13,7 @@ export class PaymentService implements IPaymentService {
     throw new Error('Method not implemented.');
   }
 
-  refundPayment(paymentId: string): Promise<any> {
+  refundPayment(paymentId: string): Promise<IPayment> {
     throw new Error('Method not implemented.');
   }
 

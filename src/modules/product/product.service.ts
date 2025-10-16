@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
+import BaseProductService from 'src/framework/abstract/product.abstract';
 import { IProduct } from 'src/interfaces/models';
-import { IProductService } from 'src/interfaces/services';
 
 @Injectable()
-export class ProductService implements IProductService {
+export class ProductService extends BaseProductService {
   addProduct(
     productData: Omit<IProduct, 'id' | 'createdAt' | 'updatedAt'>,
   ): Promise<IProduct> {

@@ -1,14 +1,10 @@
 import { Injectable } from '@nestjs/common';
+import BaseCatalogService from 'src/framework/abstract/catalog.abstract';
 import { ICategory, IProduct } from 'src/interfaces/models';
-import { ICatalogService } from 'src/interfaces/services';
 
 @Injectable()
-export class CatalogService implements ICatalogService {
+export class CatalogService extends BaseCatalogService {
   searchProducts(query: string): Promise<IProduct[]> {
-    throw new Error('Method not implemented.');
-  }
-
-  filterProducts(filters: any): Promise<IProduct[]> {
     throw new Error('Method not implemented.');
   }
 

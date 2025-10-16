@@ -1,10 +1,16 @@
 import { Injectable } from '@nestjs/common';
+import BaseCartService from 'src/framework/abstract/cart.abstract';
 import { ICart } from 'src/interfaces/models';
-import { ICartService } from 'src/interfaces/services';
 
 @Injectable()
-export class CartService implements ICartService {
-  addItemToCart(userId: string, itemData: any): Promise<ICart> {
+export class CartService extends BaseCartService {
+  addToCart(
+    userId: string,
+    items: {
+      productId: string;
+      quantity: number;
+    }[],
+  ): Promise<ICart> {
     throw new Error('Method not implemented.');
   }
 

@@ -1,9 +1,10 @@
 import { Injectable } from '@nestjs/common';
+import BaseShippingService from 'src/framework/abstract/shipping.abstract';
 import { IAddress, IShipment } from 'src/interfaces/models';
 import { IShippingService } from 'src/interfaces/services';
 
 @Injectable()
-export class ShippingService implements IShippingService {
+export class ShippingService extends BaseShippingService {
   calculateShippingCost(userId: string, address: IAddress): number {
     throw new Error('Method not implemented.');
   }
