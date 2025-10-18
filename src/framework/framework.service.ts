@@ -1,28 +1,28 @@
 import { Injectable } from '@nestjs/common';
 import { IShipment } from 'src/interfaces/models';
 import { PaymentMethod } from 'src/types';
-import BaseCartService from './abstract/cart.abstract';
-import BaseCatalogService from './abstract/catalog.abstract';
-import BaseMailService from './abstract/mail.abstract';
-import BaseOrderService from './abstract/order.abstract';
-import BasePaymentService from './abstract/payment.abstract';
-import BaseProductService from './abstract/product.abstract';
-import BaseReviewService from './abstract/review.abstract';
-import BaseShippingService from './abstract/shipping.abstract';
-import BaseUserService from './abstract/user.abstract';
+import { CartService } from '../modules/cart/cart.service';
+import { CatalogService } from '../modules/catalog/catalog.service';
+import { MailService } from '../modules/mail/mail.service';
+import { OrderService } from '../modules/order/order.service';
+import { PaymentService } from '../modules/payment/payment.service';
+import { ProductService } from '../modules/product/product.service';
+import { ReviewService } from '../modules/review/review.service';
+import { ShippingService } from '../modules/shipping/shipping.service';
+import { UserService } from '../modules/user/user.service';
 
 @Injectable()
 export class FrameworkService {
   constructor(
-    private readonly cartService: BaseCartService,
-    private readonly catalogService: BaseCatalogService,
-    private readonly mailService: BaseMailService,
-    private readonly orderService: BaseOrderService,
-    private readonly paymentService: BasePaymentService,
-    private readonly productService: BaseProductService,
-    private readonly reviewService: BaseReviewService,
-    private readonly shippingService: BaseShippingService,
-    private readonly userService: BaseUserService,
+    private readonly cartService: CartService,
+    private readonly catalogService: CatalogService,
+    private readonly mailService: MailService,
+    private readonly orderService: OrderService,
+    private readonly paymentService: PaymentService,
+    private readonly productService: ProductService,
+    private readonly reviewService: ReviewService,
+    private readonly shippingService: ShippingService,
+    private readonly userService: UserService,
   ) {}
 
   async placeOrder(userId: string, method: PaymentMethod) {
