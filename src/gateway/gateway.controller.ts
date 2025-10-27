@@ -1,6 +1,6 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, Query } from '@nestjs/common';
-import { GatewayService } from './gateway.service';
+import { Body, Controller, Delete, Get, Param, Post, Put, Query } from '@nestjs/common';
 import { PaymentMethod } from 'src/types';
+import { GatewayService } from './gateway.service';
 
 @Controller('api')
 export class GatewayController {
@@ -45,6 +45,11 @@ export class GatewayController {
   @Post('products')
   async addProduct(@Body() productData: any) {
     return this.gatewayService.addProduct(productData);
+  }
+
+  @Get('products')
+  async getAllProducts() {
+    return this.gatewayService.getAllProducts();
   }
 
   @Get('products/:id')

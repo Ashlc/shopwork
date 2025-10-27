@@ -1,17 +1,17 @@
-import { Injectable } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
+import { Injectable } from '@nestjs/common';
 import { firstValueFrom } from 'rxjs';
-import { ServiceDiscoveryService } from './service-discovery.service';
-import { PaymentMethod } from 'src/types';
 import {
-  IUser,
-  IProduct,
+  IAddress,
   ICart,
   IOrder,
   IPayment,
+  IProduct,
   IShipment,
-  IAddress,
+  IUser,
 } from 'src/interfaces/models';
+import { PaymentMethod } from 'src/types';
+import { ServiceDiscoveryService } from './service-discovery.service';
 
 @Injectable()
 export class GatewayService {
@@ -72,6 +72,12 @@ export class GatewayService {
   async getProduct(productId: string): Promise<IProduct> {
     const url = this.serviceDiscovery.getServiceUrl('product');
     const response = await firstValueFrom(this.httpService.get(`${url}/products/${productId}`));
+    return response.data;
+  }
+
+  async getAllProducts(): Promise<IProduct[]> {
+    const url = this.serviceDiscovery.getServiceUrl('product');
+    const response = await firstValueFrom(this.httpService.get(`${url}/products`));
     return response.data;
   }
 
