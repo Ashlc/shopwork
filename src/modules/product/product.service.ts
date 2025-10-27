@@ -1,7 +1,7 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { PrismaService } from 'src/database/prisma.service';
 import { IProduct } from 'src/interfaces/models';
 import { IProductService } from 'src/interfaces/services';
-import { PrismaService } from 'src/database/prisma.service';
 
 @Injectable()
 export class ProductService implements IProductService {
@@ -37,13 +37,22 @@ export class ProductService implements IProductService {
     const product = await this.prisma.product.findUnique({
       where: { id: productId },
     });
-    
+
     if (!product) {
       throw new NotFoundException('Produto não encontrado');
     }
 
     console.log('✅ Produto encontrado no banco:', product.name);
     return this.mapToIProduct(product);
+  }
+
+  async getAllProducts(): Promise<IProduct[]> {
+    const products = await this.prisma.product.findMany({
+      orderBy: { createdAt: 'desc' },
+    });
+
+    console.log(`✅ Encontrados ${products.length} produtos no banco`);
+    return products.map(product => this.mapToIProduct(product));
   }
 
   async updateProduct(
@@ -82,7 +91,7 @@ export class ProductService implements IProductService {
     const product = await this.prisma.product.findUnique({
       where: { id: productId },
     });
-    
+
     if (!product) {
       throw new NotFoundException('Produto não encontrado');
     }
