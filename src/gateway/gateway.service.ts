@@ -3,7 +3,15 @@ import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
 import { ServiceDiscoveryService } from './service-discovery.service';
 import { PaymentMethod } from 'src/types';
-import { IUser, IProduct, ICart, IOrder, IPayment, IShipment, IAddress } from 'src/interfaces/models';
+import {
+  IUser,
+  IProduct,
+  ICart,
+  IOrder,
+  IPayment,
+  IShipment,
+  IAddress,
+} from 'src/interfaces/models';
 
 @Injectable()
 export class GatewayService {
@@ -24,6 +32,14 @@ export class GatewayService {
   async getUser(userId: string): Promise<IUser> {
     const url = this.serviceDiscovery.getServiceUrl('user');
     const response = await firstValueFrom(this.httpService.get(`${url}/users/${userId}`));
+    return response.data;
+  }
+
+  async getAllUsers(): Promise<IUser[]> {
+    const url = this.serviceDiscovery.getServiceUrl('user');
+    const response = await firstValueFrom(
+      this.httpService.get(`${url}/users`),
+    );
     return response.data;
   }
 
@@ -114,19 +130,25 @@ export class GatewayService {
   // ============================================================================
   async addToCart(userId: string, itemData: any): Promise<ICart> {
     const url = this.serviceDiscovery.getServiceUrl('cart');
-    const response = await firstValueFrom(this.httpService.post(`${url}/cart/${userId}/items`, itemData));
+    const response = await firstValueFrom(
+      this.httpService.post(`${url}/cart/${userId}/items`, itemData),
+    );
     return response.data;
   }
 
   async getCart(userId: string): Promise<ICart> {
     const url = this.serviceDiscovery.getServiceUrl('cart');
-    const response = await firstValueFrom(this.httpService.get(`${url}/cart/${userId}`));
+    const response = await firstValueFrom(
+      this.httpService.get(`${url}/cart/${userId}`),
+    );
     return response.data;
   }
 
   async removeFromCart(userId: string, itemId: string): Promise<ICart> {
     const url = this.serviceDiscovery.getServiceUrl('cart');
-    const response = await firstValueFrom(this.httpService.delete(`${url}/cart/${userId}/items/${itemId}`));
+    const response = await firstValueFrom(
+      this.httpService.delete(`${url}/cart/${userId}/items/${itemId}`),
+    );
     return response.data;
   }
 
@@ -135,9 +157,17 @@ export class GatewayService {
     await firstValueFrom(this.httpService.delete(`${url}/cart/${userId}`));
   }
 
-  async updateItemQuantity(userId: string, itemId: string, quantity: number): Promise<ICart> {
+  async updateItemQuantity(
+    userId: string,
+    itemId: string,
+    quantity: number,
+  ): Promise<ICart> {
     const url = this.serviceDiscovery.getServiceUrl('cart');
-    const response = await firstValueFrom(this.httpService.put(`${url}/cart/${userId}/items/${itemId}`, { quantity }));
+    const response = await firstValueFrom(
+      this.httpService.put(`${url}/cart/${userId}/items/${itemId}`, {
+        quantity,
+      }),
+    );
     return response.data;
   }
 

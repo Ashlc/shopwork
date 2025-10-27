@@ -10,6 +10,11 @@ export class UserController {
     return this.userService.createUser(userData);
   }
 
+  @Get()
+  async getAllUsers() {
+    return this.userService.getAllUsers();
+  }
+
   @Get(':id')
   async getUser(@Param('id') id: string) {
     return this.userService.getUserInfo(id);

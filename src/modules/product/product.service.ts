@@ -1,82 +1,110 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { IProduct } from 'src/interfaces/models';
 import { IProductService } from 'src/interfaces/services';
+import { PrismaService } from 'src/database/prisma.service';
 
 @Injectable()
 export class ProductService implements IProductService {
-  private products: Map<string, IProduct> = new Map();
+  constructor(private prisma: PrismaService) {}
 
   async addProduct(
     productData: Omit<IProduct, 'id' | 'createdAt' | 'updatedAt'>,
   ): Promise<IProduct> {
     if (productData.price <= 0) {
-      throw new Error('Preço deve ser maior que zero');
+      throw new BadRequestException('Preço deve ser maior que zero');
     }
 
     if (productData.quantityInStock < 0) {
-      throw new Error('Estoque não pode ser negativo');
+      throw new BadRequestException('Estoque não pode ser negativo');
     }
 
-    const product: IProduct = {
-      id: `prod_${Date.now()}`,
-      ...productData,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
+    const product = await this.prisma.product.create({
+      data: {
+        name: productData.name,
+        description: productData.description,
+        price: productData.price,
+        category: productData.category,
+        quantityInStock: productData.quantityInStock,
+        imageUrl: productData.imageUrl,
+      },
+    });
 
-    this.products.set(product.id, product);
-    console.log('✅ Produto adicionado:', product.name, 'ID:', product.id);
-    return product;
+    console.log('✅ Produto adicionado ao banco:', product.name, 'ID:', product.id);
+    return this.mapToIProduct(product);
   }
 
   async getProduct(productId: string): Promise<IProduct> {
-    const product = this.products.get(productId);
+    const product = await this.prisma.product.findUnique({
+      where: { id: productId },
+    });
     
     if (!product) {
-      throw new Error('Produto não encontrado');
+      throw new NotFoundException('Produto não encontrado');
     }
 
-    console.log('✅ Produto encontrado:', product.name);
-    return product;
+    console.log('✅ Produto encontrado no banco:', product.name);
+    return this.mapToIProduct(product);
   }
 
   async updateProduct(
     productId: string,
     productData: Partial<IProduct>,
   ): Promise<IProduct> {
-    const product = this.products.get(productId);
-    
-    if (!product) {
-      throw new Error('Produto não encontrado');
-    }
+    // Verificar se produto existe
+    await this.getProduct(productId);
 
     if (productData.price !== undefined && productData.price <= 0) {
-      throw new Error('Preço deve ser maior que zero');
+      throw new BadRequestException('Preço deve ser maior que zero');
     }
 
     if (productData.quantityInStock !== undefined && productData.quantityInStock < 0) {
-      throw new Error('Estoque não pode ser negativo');
+      throw new BadRequestException('Estoque não pode ser negativo');
     }
 
-    const updatedProduct = {
-      ...product,
-      ...productData,
-      updatedAt: new Date().toISOString(),
-    };
+    const updateData: any = {};
+    if (productData.name) updateData.name = productData.name;
+    if (productData.description !== undefined) updateData.description = productData.description;
+    if (productData.price !== undefined) updateData.price = productData.price;
+    if (productData.category) updateData.category = productData.category;
+    if (productData.quantityInStock !== undefined) updateData.quantityInStock = productData.quantityInStock;
+    if (productData.imageUrl !== undefined) updateData.imageUrl = productData.imageUrl;
 
-    this.products.set(productId, updatedProduct);
-    console.log('✅ Produto atualizado:', productId);
-    return updatedProduct;
+    const updatedProduct = await this.prisma.product.update({
+      where: { id: productId },
+      data: updateData,
+    });
+
+    console.log('✅ Produto atualizado no banco:', productId);
+    return this.mapToIProduct(updatedProduct);
   }
 
   async deleteProduct(productId: string): Promise<void> {
-    const product = this.products.get(productId);
+    const product = await this.prisma.product.findUnique({
+      where: { id: productId },
+    });
     
     if (!product) {
-      throw new Error('Produto não encontrado');
+      throw new NotFoundException('Produto não encontrado');
     }
 
-    this.products.delete(productId);
-    console.log('✅ Produto removido:', productId);
+    await this.prisma.product.delete({
+      where: { id: productId },
+    });
+
+    console.log('✅ Produto removido do banco:', productId);
+  }
+
+  private mapToIProduct(product: any): IProduct {
+    return {
+      id: product.id,
+      name: product.name,
+      description: product.description,
+      price: product.price,
+      category: product.category,
+      quantityInStock: product.quantityInStock,
+      imageUrl: product.imageUrl,
+      createdAt: product.createdAt.toISOString(),
+      updatedAt: product.updatedAt.toISOString(),
+    };
   }
 }

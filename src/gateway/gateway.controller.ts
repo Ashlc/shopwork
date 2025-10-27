@@ -14,6 +14,11 @@ export class GatewayController {
     return this.gatewayService.createUser(userData);
   }
 
+  @Get('users')
+  async getAllUsers() {
+    return this.gatewayService.getAllUsers();
+  }
+
   @Get('users/:id')
   async getUser(@Param('id') id: string) {
     return this.gatewayService.getUser(id);

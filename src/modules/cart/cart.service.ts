@@ -1,94 +1,168 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { ICart, ICartItem, IProduct } from 'src/interfaces/models';
 import { ICartService } from 'src/interfaces/services';
+import { PrismaService } from 'src/database/prisma.service';
 
 @Injectable()
 export class CartService implements ICartService {
-  private carts: Map<string, ICart> = new Map();
+  constructor(private prisma: PrismaService) {}
 
   async addItemToCart(userId: string, itemData: any): Promise<ICart> {
-    let cart = this.carts.get(userId);
-    
+    // Verificar se produto existe
+    const product = await this.prisma.product.findUnique({
+      where: { id: itemData.productId },
+    });
+
+    if (!product) {
+      throw new NotFoundException('Produto não encontrado');
+    }
+
+    // Buscar ou criar carrinho
+    let cart = await this.prisma.cart.findFirst({
+      where: { userId },
+      include: {
+        items: {
+          include: {
+            product: true,
+          },
+        },
+      },
+    });
+
     if (!cart) {
-      cart = {
-        id: `cart_${userId}_${Date.now()}`,
-        userId,
-        products: [],
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
+      cart = await this.prisma.cart.create({
+        data: {
+          userId,
+        },
+        include: {
+          items: {
+            include: {
+              product: true,
+            },
+          },
+        },
+      });
     }
 
-    const existingItemIndex = cart.products.findIndex(item => item.productId === itemData.productId);
-    
-    if (existingItemIndex >= 0) {
-      cart.products[existingItemIndex].quantity += itemData.quantity || 1;
+    // Verificar se item já existe no carrinho
+    const existingItem = cart.items.find(
+      (item) => item.productId === itemData.productId,
+    );
+
+    if (existingItem) {
+      // Atualizar quantidade
+      await this.prisma.cartItem.update({
+        where: { id: existingItem.id },
+        data: {
+          quantity: existingItem.quantity + (itemData.quantity || 1),
+        },
+      });
     } else {
-      const product: IProduct = {
-        id: itemData.productId,
-        name: itemData.name || 'Produto',
-        description: itemData.description || '',
-        price: itemData.price || 0,
-        category: itemData.category || '',
-        quantityInStock: itemData.stock || 0,
-        imageUrl: itemData.imageUrl,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
-
-      const cartItem: ICartItem = {
-        id: `item_${Date.now()}`,
-        productId: itemData.productId,
-        product,
-        quantity: itemData.quantity || 1,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
-
-      cart.products.push(cartItem);
+      // Adicionar novo item
+      await this.prisma.cartItem.create({
+        data: {
+          cartId: cart.id,
+          productId: itemData.productId,
+          quantity: itemData.quantity || 1,
+        },
+      });
     }
 
-    cart.updatedAt = new Date().toISOString();
-    this.carts.set(userId, cart);
-    console.log('✅ Item adicionado ao carrinho:', itemData.name);
-    return cart;
+    // Buscar carrinho atualizado
+    const updatedCart = await this.prisma.cart.findUnique({
+      where: { id: cart.id },
+      include: {
+        items: {
+          include: {
+            product: true,
+          },
+        },
+      },
+    });
+
+    console.log('✅ Item adicionado ao carrinho:', product.name);
+    return this.mapToICart(updatedCart!);
   }
 
   async removeItemFromCart(userId: string, itemId: string): Promise<ICart> {
-    const cart = this.carts.get(userId);
-    
+    const cart = await this.prisma.cart.findFirst({
+      where: { userId },
+    });
+
     if (!cart) {
-      throw new Error('Carrinho não encontrado');
+      throw new NotFoundException('Carrinho não encontrado');
     }
 
-    cart.products = cart.products.filter(item => item.id !== itemId);
-    cart.updatedAt = new Date().toISOString();
-    
-    this.carts.set(userId, cart);
+    const item = await this.prisma.cartItem.findUnique({
+      where: { id: itemId },
+    });
+
+    if (!item || item.cartId !== cart.id) {
+      throw new NotFoundException('Item não encontrado no carrinho');
+    }
+
+    await this.prisma.cartItem.delete({
+      where: { id: itemId },
+    });
+
+    const updatedCart = await this.prisma.cart.findUnique({
+      where: { id: cart.id },
+      include: {
+        items: {
+          include: {
+            product: true,
+          },
+        },
+      },
+    });
+
     console.log('✅ Item removido do carrinho:', itemId);
-    return cart;
+    return this.mapToICart(updatedCart!);
   }
 
   async getCart(userId: string): Promise<ICart> {
-    const cart = this.carts.get(userId);
-    
+    let cart = await this.prisma.cart.findFirst({
+      where: { userId },
+      include: {
+        items: {
+          include: {
+            product: true,
+          },
+        },
+      },
+    });
+
     if (!cart) {
-      return {
-        id: `cart_${userId}_${Date.now()}`,
-        userId,
-        products: [],
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
+      // Criar carrinho vazio
+      cart = await this.prisma.cart.create({
+        data: {
+          userId,
+        },
+        include: {
+          items: {
+            include: {
+              product: true,
+            },
+          },
+        },
+      });
     }
 
     console.log('✅ Carrinho recuperado para usuário:', userId);
-    return cart;
+    return this.mapToICart(cart);
   }
 
   async clearCart(userId: string): Promise<void> {
-    this.carts.delete(userId);
-    console.log('✅ Carrinho limpo para usuário:', userId);
+    const cart = await this.prisma.cart.findFirst({
+      where: { userId },
+    });
+
+    if (cart) {
+      await this.prisma.cartItem.deleteMany({
+        where: { cartId: cart.id },
+      });
+      console.log('✅ Carrinho limpo para usuário:', userId);
+    }
   }
 
   async updateItemQuantity(
@@ -96,27 +170,78 @@ export class CartService implements ICartService {
     itemId: string,
     quantity: number,
   ): Promise<ICart> {
-    const cart = this.carts.get(userId);
-    
+    const cart = await this.prisma.cart.findFirst({
+      where: { userId },
+    });
+
     if (!cart) {
-      throw new Error('Carrinho não encontrado');
+      throw new NotFoundException('Carrinho não encontrado');
     }
 
-    const item = cart.products.find(item => item.id === itemId);
-    if (!item) {
-      throw new Error('Item não encontrado no carrinho');
+    const item = await this.prisma.cartItem.findUnique({
+      where: { id: itemId },
+    });
+
+    if (!item || item.cartId !== cart.id) {
+      throw new NotFoundException('Item não encontrado no carrinho');
     }
 
     if (quantity <= 0) {
       return this.removeItemFromCart(userId, itemId);
     }
 
-    item.quantity = quantity;
-    item.updatedAt = new Date().toISOString();
-    cart.updatedAt = new Date().toISOString();
-    
-    this.carts.set(userId, cart);
+    await this.prisma.cartItem.update({
+      where: { id: itemId },
+      data: { quantity },
+    });
+
+    const updatedCart = await this.prisma.cart.findUnique({
+      where: { id: cart.id },
+      include: {
+        items: {
+          include: {
+            product: true,
+          },
+        },
+      },
+    });
+
     console.log('✅ Quantidade atualizada no carrinho:', itemId, 'para', quantity);
-    return cart;
+    return this.mapToICart(updatedCart!);
+  }
+
+  private mapToICart(cart: any): ICart {
+    return {
+      id: cart.id,
+      userId: cart.userId,
+      products: cart.items.map((item: any) => this.mapToICartItem(item)),
+      createdAt: cart.createdAt.toISOString(),
+      updatedAt: cart.updatedAt.toISOString(),
+    };
+  }
+
+  private mapToICartItem(item: any): ICartItem {
+    return {
+      id: item.id,
+      productId: item.productId,
+      product: this.mapToIProduct(item.product),
+      quantity: item.quantity,
+      createdAt: item.createdAt.toISOString(),
+      updatedAt: item.updatedAt.toISOString(),
+    };
+  }
+
+  private mapToIProduct(product: any): IProduct {
+    return {
+      id: product.id,
+      name: product.name,
+      description: product.description,
+      price: product.price,
+      category: product.category,
+      quantityInStock: product.quantityInStock,
+      imageUrl: product.imageUrl,
+      createdAt: product.createdAt.toISOString(),
+      updatedAt: product.updatedAt.toISOString(),
+    };
   }
 }

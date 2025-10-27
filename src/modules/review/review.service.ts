@@ -1,70 +1,100 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { IReviewService } from 'src/interfaces/services';
 import { IReview } from 'src/interfaces/models';
+import { PrismaService } from 'src/database/prisma.service';
 
 @Injectable()
 export class ReviewService implements IReviewService {
-  private reviews: Map<string, IReview> = new Map();
+  constructor(private prisma: PrismaService) {}
 
   async addReview(productId: string, reviewData: any): Promise<IReview> {
     if (reviewData.rating < 1 || reviewData.rating > 5) {
-      throw new Error('Avaliação deve estar entre 1 e 5 estrelas');
+      throw new BadRequestException('Avaliação deve estar entre 1 e 5 estrelas');
     }
 
-    const review: IReview = {
-      id: `review_${Date.now()}`,
-      productId,
-      userId: reviewData.userId,
-      rating: reviewData.rating,
-      comment: reviewData.comment || '',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
+    // Verificar se produto existe
+    const product = await this.prisma.product.findUnique({
+      where: { id: productId },
+    });
 
-    this.reviews.set(review.id, review);
-    console.log('✅ Avaliação adicionada:', review.id, 'para produto:', productId);
-    return review;
+    if (!product) {
+      throw new NotFoundException('Produto não encontrado');
+    }
+
+    const review = await this.prisma.review.create({
+      data: {
+        productId,
+        userId: reviewData.userId,
+        rating: reviewData.rating,
+        comment: reviewData.comment || '',
+      },
+    });
+
+    console.log('✅ Avaliação adicionada ao banco:', review.id, 'para produto:', productId);
+    return this.mapToIReview(review);
   }
 
   async getReviews(productId: string): Promise<IReview[]> {
-    const productReviews = Array.from(this.reviews.values())
-      .filter(review => review.productId === productId)
-      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    const reviews = await this.prisma.review.findMany({
+      where: { productId },
+      orderBy: { createdAt: 'desc' },
+    });
 
-    console.log(`✅ ${productReviews.length} avaliações encontradas para produto:`, productId);
-    return productReviews;
+    console.log(`✅ ${reviews.length} avaliações encontradas para produto:`, productId);
+    return reviews.map((review) => this.mapToIReview(review));
   }
 
   async updateReview(reviewId: string, reviewData: any): Promise<IReview> {
-    const review = this.reviews.get(reviewId);
+    const existingReview = await this.prisma.review.findUnique({
+      where: { id: reviewId },
+    });
     
-    if (!review) {
-      throw new Error('Avaliação não encontrada');
+    if (!existingReview) {
+      throw new NotFoundException('Avaliação não encontrada');
     }
 
     if (reviewData.rating && (reviewData.rating < 1 || reviewData.rating > 5)) {
-      throw new Error('Avaliação deve estar entre 1 e 5 estrelas');
+      throw new BadRequestException('Avaliação deve estar entre 1 e 5 estrelas');
     }
 
-    const updatedReview = {
-      ...review,
-      ...reviewData,
-      updatedAt: new Date().toISOString(),
-    };
+    const updateData: any = {};
+    if (reviewData.rating !== undefined) updateData.rating = reviewData.rating;
+    if (reviewData.comment !== undefined) updateData.comment = reviewData.comment;
 
-    this.reviews.set(reviewId, updatedReview);
-    console.log('✅ Avaliação atualizada:', reviewId);
-    return updatedReview;
+    const updatedReview = await this.prisma.review.update({
+      where: { id: reviewId },
+      data: updateData,
+    });
+
+    console.log('✅ Avaliação atualizada no banco:', reviewId);
+    return this.mapToIReview(updatedReview);
   }
 
   async deleteReview(reviewId: string): Promise<void> {
-    const review = this.reviews.get(reviewId);
+    const review = await this.prisma.review.findUnique({
+      where: { id: reviewId },
+    });
     
     if (!review) {
-      throw new Error('Avaliação não encontrada');
+      throw new NotFoundException('Avaliação não encontrada');
     }
 
-    this.reviews.delete(reviewId);
-    console.log('✅ Avaliação removida:', reviewId);
+    await this.prisma.review.delete({
+      where: { id: reviewId },
+    });
+
+    console.log('✅ Avaliação removida do banco:', reviewId);
+  }
+
+  private mapToIReview(review: any): IReview {
+    return {
+      id: review.id,
+      userId: review.userId,
+      productId: review.productId,
+      rating: review.rating,
+      comment: review.comment,
+      createdAt: review.createdAt.toISOString(),
+      updatedAt: review.updatedAt.toISOString(),
+    };
   }
 }
