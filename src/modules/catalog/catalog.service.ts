@@ -1,168 +1,154 @@
 import { Injectable } from '@nestjs/common';
+import { PrismaService } from 'src/database/prisma.service';
 import { ICategory, IProduct } from 'src/interfaces/models';
 import { ICatalogService } from 'src/interfaces/services';
 
 @Injectable()
 export class CatalogService implements ICatalogService {
-  private products: IProduct[] = [
-    {
-      id: 'prod_1',
-      name: 'Smartphone Galaxy S24',
-      description: 'Smartphone premium com câmera de 108MP',
-      price: 2999.99,
-      category: 'Eletrônicos',
-      quantityInStock: 50,
-      imageUrl: 'https://example.com/galaxy-s24.jpg',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    },
-    {
-      id: 'prod_2',
-      name: 'Notebook Dell XPS 13',
-      description: 'Notebook ultrabook com processador Intel i7',
-      price: 4999.99,
-      category: 'Eletrônicos',
-      quantityInStock: 25,
-      imageUrl: 'https://example.com/dell-xps13.jpg',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    },
-    {
-      id: 'prod_3',
-      name: 'Tênis Nike Air Max',
-      description: 'Tênis esportivo confortável',
-      price: 399.99,
-      category: 'Calçados',
-      quantityInStock: 100,
-      imageUrl: 'https://example.com/nike-airmax.jpg',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    },
-    {
-      id: 'prod_4',
-      name: 'Camiseta Polo Lacoste',
-      description: 'Camiseta polo de algodão premium',
-      price: 199.99,
-      category: 'Roupas',
-      quantityInStock: 75,
-      imageUrl: 'https://example.com/lacoste-polo.jpg',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    },
-  ];
-
-  private categories: ICategory[] = [
-    {
-      id: 'cat_1',
-      name: 'Eletrônicos',
-      description: 'Smartphones, notebooks, tablets e acessórios',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    },
-    {
-      id: 'cat_2',
-      name: 'Calçados',
-      description: 'Tênis, sapatos, sandálias e botas',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    },
-    {
-      id: 'cat_3',
-      name: 'Roupas',
-      description: 'Camisetas, calças, vestidos e acessórios',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    },
-  ];
+  constructor(private prisma: PrismaService) {}
 
   async searchProducts(query: string): Promise<IProduct[]> {
-    const searchTerm = query.toLowerCase();
-    const results = this.products.filter(product => 
-      product.name.toLowerCase().includes(searchTerm) ||
-      product.description.toLowerCase().includes(searchTerm) ||
-      product.category.toLowerCase().includes(searchTerm)
-    );
+    const searchTerm = query;
 
+    const products = await this.prisma.product.findMany({
+      where: {
+        OR: [
+          { name: { contains: searchTerm } },
+          { description: { contains: searchTerm } },
+          { category: { contains: searchTerm } },
+        ],
+      },
+    });
+
+    const results = products.map(product => this.mapToIProduct(product));
     console.log(`✅ ${results.length} produtos encontrados para: "${query}"`);
     return results;
   }
 
   async filterProducts(filters: any): Promise<IProduct[]> {
-    let results = [...this.products];
+    const where: any = {};
 
     if (filters.category) {
-      results = results.filter(product => product.category === filters.category);
+      where.category = filters.category;
     }
 
-    if (filters.minPrice !== undefined) {
-      results = results.filter(product => product.price >= filters.minPrice);
-    }
-
-    if (filters.maxPrice !== undefined) {
-      results = results.filter(product => product.price <= filters.maxPrice);
+    if (filters.minPrice !== undefined || filters.maxPrice !== undefined) {
+      where.price = {};
+      if (filters.minPrice !== undefined) {
+        where.price.gte = filters.minPrice;
+      }
+      if (filters.maxPrice !== undefined) {
+        where.price.lte = filters.maxPrice;
+      }
     }
 
     if (filters.inStock) {
-      results = results.filter(product => product.quantityInStock > 0);
+      where.quantityInStock = { gt: 0 };
     }
+
+    const products = await this.prisma.product.findMany({ where });
+    const results = products.map(product => this.mapToIProduct(product));
 
     console.log(`✅ ${results.length} produtos encontrados com filtros aplicados`);
     return results;
   }
 
   async getHighlights(): Promise<IProduct[]> {
-    // Produtos em destaque (exemplo: produtos com maior estoque e preços atrativos)
-    const highlights = this.products
-      .filter(product => product.quantityInStock > 20)
-      .sort((a, b) => b.quantityInStock - a.quantityInStock)
-      .slice(0, 3);
+    // Produtos em destaque (produtos com maior estoque)
+    const products = await this.prisma.product.findMany({
+      where: { quantityInStock: { gt: 20 } },
+      orderBy: { quantityInStock: 'desc' },
+      take: 3,
+    });
 
+    const highlights = products.map(product => this.mapToIProduct(product));
     console.log(`✅ ${highlights.length} produtos em destaque`);
     return highlights;
   }
 
   async getProductCategories(): Promise<ICategory[]> {
-    console.log(`✅ ${this.categories.length} categorias encontradas`);
-    return this.categories;
+    const categories = await this.prisma.category.findMany();
+    const results = categories.map(cat => this.mapToICategory(cat));
+    console.log(`✅ ${results.length} categorias encontradas`);
+    return results;
   }
 
-  //TODO: sistema de recomnedação menos aleatorio
+  //TODO: sistema de recomendação menos aleatório
   async recommendProducts(userId: string): Promise<IProduct[]> {
     // Simulação de recomendação baseada em histórico (exemplo simples)
-    const recommendations = this.products
-      .filter(product => product.quantityInStock > 0)
+    const products = await this.prisma.product.findMany({
+      where: { quantityInStock: { gt: 0 } },
+    });
+
+    const recommendations = products
       .sort(() => Math.random() - 0.5)
-      .slice(0, 3);
+      .slice(0, 3)
+      .map(product => this.mapToIProduct(product));
 
     console.log(`✅ ${recommendations.length} produtos recomendados para usuário:`, userId);
     return recommendations;
   }
 
   async getRelatedProducts(productId: string): Promise<IProduct[]> {
-    const product = this.products.find(p => p.id === productId);
-    
+    const product = await this.prisma.product.findUnique({
+      where: { id: productId },
+    });
+
     if (!product) {
       return [];
     }
 
-    const related = this.products
-      .filter(p => p.id !== productId && p.category === product.category)
-      .slice(0, 3);
+    const related = await this.prisma.product.findMany({
+      where: {
+        id: { not: productId },
+        category: product.category,
+      },
+      take: 3,
+    });
 
-    console.log(`✅ ${related.length} produtos relacionados encontrados para:`, productId);
-    return related;
+    const results = related.map(p => this.mapToIProduct(p));
+    console.log(`✅ ${results.length} produtos relacionados encontrados para:`, productId);
+    return results;
   }
 
   async getNewArrivals(): Promise<IProduct[]> {
-    // Produtos mais recentes (exemplo: últimos 30 dias)
+    // Produtos mais recentes (últimos 30 dias)
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-    const newArrivals = this.products
-      .filter(product => new Date(product.createdAt) > thirtyDaysAgo)
-      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    const newArrivals = await this.prisma.product.findMany({
+      where: {
+        createdAt: { gte: thirtyDaysAgo },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
 
-    console.log(`✅ ${newArrivals.length} produtos novos encontrados`);
-    return newArrivals;
+    const results = newArrivals.map(product => this.mapToIProduct(product));
+    console.log(`✅ ${results.length} produtos novos encontrados`);
+    return results;
+  }
+
+  private mapToIProduct(product: any): IProduct {
+    return {
+      id: product.id,
+      name: product.name,
+      description: product.description,
+      price: product.price,
+      category: product.category,
+      quantityInStock: product.quantityInStock,
+      imageUrl: product.imageUrl,
+      createdAt: product.createdAt.toISOString(),
+      updatedAt: product.updatedAt.toISOString(),
+    };
+  }
+
+  private mapToICategory(category: any): ICategory {
+    return {
+      id: category.id,
+      name: category.name,
+      description: category.description,
+      createdAt: category.createdAt.toISOString(),
+      updatedAt: category.updatedAt.toISOString(),
+    };
   }
 }
