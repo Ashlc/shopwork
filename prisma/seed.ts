@@ -41,6 +41,12 @@ async function main() {
         description: 'Livros e publicações',
       },
     }),
+    prisma.category.create({
+      data: {
+        name: 'Acessórios',
+        description: 'Acessórios para eletrônicos e informática',
+      },
+    }),
   ]);
   console.log(`✅ ${categories.length} categorias criadas\n`);
 
@@ -49,46 +55,102 @@ async function main() {
   const products = await Promise.all([
     prisma.product.create({
       data: {
-        id: 'prod_1',
-        name: 'Smartphone Galaxy S24',
-        description: 'Smartphone premium com câmera de 108MP',
-        price: 2999.99,
+        name: 'Edifier Wireless Headphones W600BT',
+        description: 'Noise-cancelling over-ear headphones with long battery life.',
+        price: 39.99,
         category: 'Eletrônicos',
         quantityInStock: 50,
-        imageUrl: 'https://example.com/galaxy-s24.jpg',
+        imageUrl: 'https://edifier.com.br/media/catalog/product/cache/eba5f2f163b55172c022905d0dc2efd7/f/o/fone-bluetooth-edifier-w600bt-pret_1.jpg',
       },
     }),
     prisma.product.create({
       data: {
-        id: 'prod_2',
-        name: 'Notebook Dell XPS 13',
-        description: 'Notebook ultrabook com processador Intel i7',
-        price: 4999.99,
+        name: 'Sencor Sirius 2 Mini Black Bluetooth Speaker',
+        description: 'High-quality portable speaker with deep bass.',
+        price: 199.99,
+        category: 'Eletrônicos',
+        quantityInStock: 30,
+        imageUrl: 'https://www.sencor.com/Sencor/media/static-media/6770caad-d0be-4d0d-b5f0-01bbc4c1c555@w600.webp',
+      },
+    }),
+    prisma.product.create({
+      data: {
+        name: 'Smartwatch X-Watch Preto XSWUQPI001A',
+        description: 'Feature-rich smartwatch with health tracking.',
+        price: 299.99,
+        category: 'Eletrônicos',
+        quantityInStock: 20,
+        imageUrl: 'https://images.tcdn.com.br/img/img_prod/1087072/relogio_smartwatch_x_watch_preto_com_alexa_1460_1_acdfd0a488affed854938b88c640670c.jpg',
+      },
+    }),
+    prisma.product.create({
+      data: {
+        name: 'Elite Power Laptop Stand with Wireless Charger',
+        description: 'Ergonomic aluminum laptop stand for better posture.',
+        price: 49.99,
+        category: 'Acessórios',
+        quantityInStock: 75,
+        imageUrl: 'https://alogic.co/cdn/shop/files/Alogic_Elite_Power_Laptop_Stand_With_Wireless_Charger_Black_1.webp?v=1751890807',
+      },
+    }),
+    prisma.product.create({
+      data: {
+        name: 'UGREEN Hub USB C 4 portas',
+        description: 'Hub USB C estendido: este hub adaptador fino USB-C preenche a lacuna entre USB-A e USB-C para conectar dispositivos mais antigos ao seu novo laptop USB C, expanda a única porta tipo C ou thunderbolt 3 em 4 portas USB 3.0 fêmeas padrão. 5 Gbps de alta velocidade: Hub USB C 4 portas suportam transferência de dados super rápida de até 5 Gbps - 10X mais rápido que USB 2.0. Você pode transferir fotos, vídeos e arquivos grandes em segundos, economizando seu tempo precioso.',
+        price: 39.99,
+        category: 'Acessórios',
+        quantityInStock: 100,
+        imageUrl: 'https://m.media-amazon.com/images/I/61KRLch6voL.jpg',
+      },
+    }),
+    prisma.product.create({
+      data: {
+        name: 'Keychron Q1 QMK Custom Mechanical Keyboard',
+        description: 'Keychron Q1 is a fully customized 75% layout mechanical keyboard packed with all premium features and unlimited possibilities. RGB backlit mechanical keyboard with blue switches.',
+        price: 129.99,
+        category: 'Eletrônicos',
+        quantityInStock: 40,
+        imageUrl: 'https://keychron.ph/cdn/shop/products/Keychron-Q1-custom-mechanical-keyboard-green-version-red_3b2b5520-b8f2-42b4-a769-629cc2fb3084.jpg',
+      },
+    }),
+    prisma.product.create({
+      data: {
+        name: 'Wireless Mouse M185 SWIFT GREY 2.4GHZ Logitech',
+        description: 'Ergonomic wireless mouse with adjustable DPI.',
+        price: 34.99,
+        category: 'Eletrônicos',
+        quantityInStock: 60,
+        imageUrl: 'https://www.lojamundi.com.br/imagens/produtos/Wireless-Mouse-M185-SWIFT-GREY-2.4GHZ-Logitech.jpg',
+      },
+    }),
+    prisma.product.create({
+      data: {
+        name: 'Apple Phone Silicone Case',
+        description: 'Durable silicone phone case with shock absorption.',
+        price: 19.99,
+        category: 'Acessórios',
+        quantityInStock: 150,
+        imageUrl: 'https://store.storeimages.cdn-apple.com/1/as-images.apple.com/is/MT233?wid=1144&hei=1144&fmt=jpeg&qlt=90&.v=L0k2OWM4cGRyZzBTVVMwTnB2NEZmd2tuVHYzMERCZURia3c5SzJFOTlPalpQUlZGaitSQjJVekdLRWQ5QlBiN2pwVWYxQWxURXh2M0VKZnNpT1ZIYnc',
+      },
+    }),
+    prisma.product.create({
+      data: {
+        name: 'Anker PowerCore Portable Charger',
+        description: '20000mAh power bank with fast charging support.',
+        price: 44.99,
+        category: 'Eletrônicos',
+        quantityInStock: 80,
+        imageUrl: 'https://i5.walmartimages.com/seo/Anker-PowerCore-Select-10000-Portable-Charger-Black-Ultra-Compact-High-Speed-Charging-Technology-Phone-Charger-for-iPhone-Samsung-and-More_621e9d8d-b4b2-4e15-b4cd-b439561ec4d0.c822834630c31c13416f2aacb33ddd5e.jpeg',
+      },
+    }),
+    prisma.product.create({
+      data: {
+        name: 'Gamer Monitor PCFort T2703-200 27" 1ms 200hz',
+        description: '27-inch 4K monitor with HDR support.',
+        price: 399.99,
         category: 'Eletrônicos',
         quantityInStock: 25,
-        imageUrl: 'https://example.com/dell-xps13.jpg',
-      },
-    }),
-    prisma.product.create({
-      data: {
-        id: 'prod_3',
-        name: 'Tênis Nike Air Max',
-        description: 'Tênis esportivo confortável',
-        price: 399.99,
-        category: 'Calçados',
-        quantityInStock: 100,
-        imageUrl: 'https://example.com/nike-airmax.jpg',
-      },
-    }),
-    prisma.product.create({
-      data: {
-        id: 'prod_4',
-        name: 'Camiseta Polo Lacoste',
-        description: 'Camiseta polo de algodão premium',
-        price: 199.99,
-        category: 'Roupas',
-        quantityInStock: 75,
-        imageUrl: 'https://example.com/lacoste-polo.jpg',
+        imageUrl: 'https://images.tcdn.com.br/img/img_prod/740836/monitor_gamer_pcfort_t2703_200_27_1ms_200hz_led_full_hd_100_srgb_freesync_gsync_display_port_hdmi_dv_23949_1_f8f7555b22ce74e6784de4ac7661f352.jpg',
       },
     }),
   ]);
@@ -194,7 +256,7 @@ async function main() {
   await prisma.cartItem.create({
     data: {
       cartId: cart1.id,
-      productId: products[2].id,
+      productId: products[4].id,
       quantity: 2,
     },
   });
