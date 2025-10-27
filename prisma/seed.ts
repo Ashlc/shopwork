@@ -49,52 +49,46 @@ async function main() {
   const products = await Promise.all([
     prisma.product.create({
       data: {
-        name: 'Smartphone XYZ',
-        description: 'Smartphone top de linha com 128GB',
+        id: 'prod_1',
+        name: 'Smartphone Galaxy S24',
+        description: 'Smartphone premium com câmera de 108MP',
         price: 2999.99,
         category: 'Eletrônicos',
         quantityInStock: 50,
-        imageUrl: 'https://example.com/smartphone.jpg',
+        imageUrl: 'https://example.com/galaxy-s24.jpg',
       },
     }),
     prisma.product.create({
       data: {
-        name: 'Notebook ABC',
-        description: 'Notebook potente para trabalho e jogos',
-        price: 4500.00,
+        id: 'prod_2',
+        name: 'Notebook Dell XPS 13',
+        description: 'Notebook ultrabook com processador Intel i7',
+        price: 4999.99,
         category: 'Eletrônicos',
-        quantityInStock: 30,
-        imageUrl: 'https://example.com/notebook.jpg',
+        quantityInStock: 25,
+        imageUrl: 'https://example.com/dell-xps13.jpg',
       },
     }),
     prisma.product.create({
       data: {
-        name: 'Camiseta Básica',
-        description: 'Camiseta 100% algodão',
-        price: 49.90,
-        category: 'Roupas',
-        quantityInStock: 200,
-        imageUrl: 'https://example.com/camiseta.jpg',
-      },
-    }),
-    prisma.product.create({
-      data: {
-        name: 'Livro: Clean Code',
-        description: 'Livro sobre boas práticas de programação',
-        price: 89.90,
-        category: 'Livros',
+        id: 'prod_3',
+        name: 'Tênis Nike Air Max',
+        description: 'Tênis esportivo confortável',
+        price: 399.99,
+        category: 'Calçados',
         quantityInStock: 100,
-        imageUrl: 'https://example.com/cleancode.jpg',
+        imageUrl: 'https://example.com/nike-airmax.jpg',
       },
     }),
     prisma.product.create({
       data: {
-        name: 'Fone de Ouvido Bluetooth',
-        description: 'Fone sem fio com cancelamento de ruído',
-        price: 299.90,
-        category: 'Eletrônicos',
+        id: 'prod_4',
+        name: 'Camiseta Polo Lacoste',
+        description: 'Camiseta polo de algodão premium',
+        price: 199.99,
+        category: 'Roupas',
         quantityInStock: 75,
-        imageUrl: 'https://example.com/fone.jpg',
+        imageUrl: 'https://example.com/lacoste-polo.jpg',
       },
     }),
   ]);
@@ -200,7 +194,7 @@ async function main() {
   await prisma.cartItem.create({
     data: {
       cartId: cart1.id,
-      productId: products[4].id,
+      productId: products[2].id,
       quantity: 2,
     },
   });
