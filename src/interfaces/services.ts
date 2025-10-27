@@ -30,6 +30,7 @@ export interface IUserService {
 export interface IProductService {
   addProduct(productData: any): Promise<any>;
   getProduct(productId: string): Promise<any>;
+  getAllProducts(): Promise<any[]>;
   updateProduct(productId: string, productData: any): Promise<any>;
   deleteProduct(productId: string): Promise<void>;
 }
