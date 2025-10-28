@@ -1,18 +1,23 @@
 import { Injectable } from '@nestjs/common';
+import BasePaymentService from 'src/framework/abstract/payment.abstract';
 import { IPayment } from 'src/interfaces/models';
-import { IPaymentService } from 'src/interfaces/services';
 import { PaymentMethod } from 'src/types';
 
 @Injectable()
-export class PaymentService implements IPaymentService {
+export class PaymentService extends BasePaymentService {
   private payments: Map<string, IPayment> = new Map();
 
-  async openPaymentProcess(orderId: string, method: PaymentMethod): Promise<string> {
+  async openPaymentProcess(
+    orderId: string,
+    method: PaymentMethod,
+  ): Promise<string> {
     // Simular abertura de processo de pagamento
     const paymentId = `pay_${Date.now()}`;
-    
-    console.log(`💳 Processo de pagamento aberto para pedido ${orderId} via ${method}`);
-    
+
+    console.log(
+      `💳 Processo de pagamento aberto para pedido ${orderId} via ${method}`,
+    );
+
     // Simular diferentes URLs de pagamento baseado no método
     let paymentUrl = '';
     switch (method) {
@@ -62,7 +67,7 @@ export class PaymentService implements IPaymentService {
 
   async refundPayment(paymentId: string): Promise<any> {
     const payment = this.payments.get(paymentId);
-    
+
     if (!payment) {
       throw new Error('Pagamento não encontrado');
     }
@@ -89,7 +94,7 @@ export class PaymentService implements IPaymentService {
 
   async getPaymentDetails(paymentId: string): Promise<IPayment> {
     const payment = this.payments.get(paymentId);
-    
+
     if (!payment) {
       throw new Error('Pagamento não encontrado');
     }
@@ -108,7 +113,7 @@ export class PaymentService implements IPaymentService {
       case 'boleto':
         return 0.85; // 85% de sucesso
       default:
-        return 0.80; // 80% de sucesso
+        return 0.8; // 80% de sucesso
     }
   }
 }

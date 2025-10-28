@@ -1,18 +1,18 @@
 import { Injectable } from '@nestjs/common';
-import { IMailService } from 'src/interfaces/services';
+import BaseMailService from 'src/framework/abstract/mail.abstract';
 import { IShipment } from 'src/interfaces/models';
 
 @Injectable()
-export class MailService implements IMailService {
+export class MailService extends BaseMailService {
   async sendEmail(to: string, subject: string, body: string): Promise<void> {
     // Simulação de envio de email
     console.log('📧 Email enviado:');
     console.log(`   Para: ${to}`);
     console.log(`   Assunto: ${subject}`);
     console.log(`   Conteúdo: ${body.substring(0, 100)}...`);
-    
+
     // Simular delay de envio
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await new Promise((resolve) => setTimeout(resolve, 100));
   }
 
   async sendBulkEmail(
@@ -20,9 +20,11 @@ export class MailService implements IMailService {
     subject: string,
     body: string,
   ): Promise<void> {
-    console.log(`📧 Enviando email em massa para ${recipients.length} destinatários:`);
+    console.log(
+      `📧 Enviando email em massa para ${recipients.length} destinatários:`,
+    );
     console.log(`   Assunto: ${subject}`);
-    
+
     for (const recipient of recipients) {
       await this.sendEmail(recipient, subject, body);
     }
@@ -41,12 +43,15 @@ export class MailService implements IMailService {
       
       Equipe ShopWork
     `;
-    
+
     await this.sendEmail(`user${userId}@example.com`, subject, body);
     console.log('✅ Email de confirmação de pedido enviado');
   }
 
-  async sendClosureConfirmation(userId: string, orderId: string): Promise<void> {
+  async sendClosureConfirmation(
+    userId: string,
+    orderId: string,
+  ): Promise<void> {
     const subject = 'Pedido Finalizado';
     const body = `
       Olá!
@@ -59,12 +64,15 @@ export class MailService implements IMailService {
       
       Equipe ShopWork
     `;
-    
+
     await this.sendEmail(`user${userId}@example.com`, subject, body);
     console.log('✅ Email de confirmação de fechamento enviado');
   }
 
-  async sendShippingInformation(userId: string, shipment: IShipment): Promise<void> {
+  async sendShippingInformation(
+    userId: string,
+    shipment: IShipment,
+  ): Promise<void> {
     const subject = 'Informações de Envio';
     const body = `
       Olá!
@@ -79,12 +87,15 @@ export class MailService implements IMailService {
       
       Equipe ShopWork
     `;
-    
+
     await this.sendEmail(`user${userId}@example.com`, subject, body);
     console.log('✅ Email de informações de envio enviado');
   }
 
-  async sendPasswordResetEmail(userId: string, resetToken: string): Promise<void> {
+  async sendPasswordResetEmail(
+    userId: string,
+    resetToken: string,
+  ): Promise<void> {
     const subject = 'Redefinição de Senha';
     const body = `
       Olá!
@@ -100,7 +111,7 @@ export class MailService implements IMailService {
       
       Equipe ShopWork
     `;
-    
+
     await this.sendEmail(`user${userId}@example.com`, subject, body);
     console.log('✅ Email de redefinição de senha enviado');
   }

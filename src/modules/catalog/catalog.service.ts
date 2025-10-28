@@ -1,11 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/database/prisma.service';
+import BaseCatalogService from 'src/framework/abstract/catalog.abstract';
 import { ICategory, IProduct } from 'src/interfaces/models';
-import { ICatalogService } from 'src/interfaces/services';
 
 @Injectable()
-export class CatalogService implements ICatalogService {
-  constructor(private prisma: PrismaService) {}
+export class CatalogService extends BaseCatalogService {
+  constructor(private prisma: PrismaService) {
+    super();
+  }
 
   async searchProducts(query: string): Promise<IProduct[]> {
     const searchTerm = query;
@@ -20,7 +22,7 @@ export class CatalogService implements ICatalogService {
       },
     });
 
-    const results = products.map(product => this.mapToIProduct(product));
+    const results = products.map((product) => this.mapToIProduct(product));
     console.log(`✅ ${results.length} produtos encontrados para: "${query}"`);
     return results;
   }
@@ -47,9 +49,11 @@ export class CatalogService implements ICatalogService {
     }
 
     const products = await this.prisma.product.findMany({ where });
-    const results = products.map(product => this.mapToIProduct(product));
+    const results = products.map((product) => this.mapToIProduct(product));
 
-    console.log(`✅ ${results.length} produtos encontrados com filtros aplicados`);
+    console.log(
+      `✅ ${results.length} produtos encontrados com filtros aplicados`,
+    );
     return results;
   }
 
@@ -61,14 +65,14 @@ export class CatalogService implements ICatalogService {
       take: 3,
     });
 
-    const highlights = products.map(product => this.mapToIProduct(product));
+    const highlights = products.map((product) => this.mapToIProduct(product));
     console.log(`✅ ${highlights.length} produtos em destaque`);
     return highlights;
   }
 
   async getProductCategories(): Promise<ICategory[]> {
     const categories = await this.prisma.category.findMany();
-    const results = categories.map(cat => this.mapToICategory(cat));
+    const results = categories.map((cat) => this.mapToICategory(cat));
     console.log(`✅ ${results.length} categorias encontradas`);
     return results;
   }
@@ -83,9 +87,12 @@ export class CatalogService implements ICatalogService {
     const recommendations = products
       .sort(() => Math.random() - 0.5)
       .slice(0, 3)
-      .map(product => this.mapToIProduct(product));
+      .map((product) => this.mapToIProduct(product));
 
-    console.log(`✅ ${recommendations.length} produtos recomendados para usuário:`, userId);
+    console.log(
+      `✅ ${recommendations.length} produtos recomendados para usuário:`,
+      userId,
+    );
     return recommendations;
   }
 
@@ -106,8 +113,11 @@ export class CatalogService implements ICatalogService {
       take: 3,
     });
 
-    const results = related.map(p => this.mapToIProduct(p));
-    console.log(`✅ ${results.length} produtos relacionados encontrados para:`, productId);
+    const results = related.map((p) => this.mapToIProduct(p));
+    console.log(
+      `✅ ${results.length} produtos relacionados encontrados para:`,
+      productId,
+    );
     return results;
   }
 
@@ -123,7 +133,7 @@ export class CatalogService implements ICatalogService {
       orderBy: { createdAt: 'desc' },
     });
 
-    const results = newArrivals.map(product => this.mapToIProduct(product));
+    const results = newArrivals.map((product) => this.mapToIProduct(product));
     console.log(`✅ ${results.length} produtos novos encontrados`);
     return results;
   }

@@ -1,30 +1,28 @@
 import { Injectable } from '@nestjs/common';
 import { IShipment } from 'src/interfaces/models';
-import type {
-  ICartService,
-  ICatalogService,
-  IMailService,
-  IOrderService,
-  IPaymentService,
-  IProductService,
-  IReviewService,
-  IShippingService,
-  IUserService,
-} from 'src/interfaces/services';
 import { PaymentMethod } from 'src/types';
+import { CartService } from '../modules/cart/cart.service';
+import { CatalogService } from '../modules/catalog/catalog.service';
+import { MailService } from '../modules/mail/mail.service';
+import { OrderService } from '../modules/order/order.service';
+import { PaymentService } from '../modules/payment/payment.service';
+import { ProductService } from '../modules/product/product.service';
+import { ReviewService } from '../modules/review/review.service';
+import { ShippingService } from '../modules/shipping/shipping.service';
+import { UserService } from '../modules/user/user.service';
 
 @Injectable()
 export class FrameworkService {
   constructor(
-    private readonly cartService: ICartService,
-    private readonly catalogService: ICatalogService,
-    private readonly mailService: IMailService,
-    private readonly orderService: IOrderService,
-    private readonly paymentService: IPaymentService,
-    private readonly productService: IProductService,
-    private readonly reviewService: IReviewService,
-    private readonly shippingService: IShippingService,
-    private readonly userService: IUserService,
+    private readonly cartService: CartService,
+    private readonly catalogService: CatalogService,
+    private readonly mailService: MailService,
+    private readonly orderService: OrderService,
+    private readonly paymentService: PaymentService,
+    private readonly productService: ProductService,
+    private readonly reviewService: ReviewService,
+    private readonly shippingService: ShippingService,
+    private readonly userService: UserService,
   ) {}
 
   async placeOrder(userId: string, method: PaymentMethod) {

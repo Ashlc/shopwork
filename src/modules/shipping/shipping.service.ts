@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
+import BaseShippingService from 'src/framework/abstract/shipping.abstract';
 import { IAddress, IShipment } from 'src/interfaces/models';
-import { IShippingService } from 'src/interfaces/services';
 
 @Injectable()
-export class ShippingService implements IShippingService {
+export class ShippingService extends BaseShippingService {
   private shipments: Map<string, IShipment> = new Map();
 
   calculateShippingCost(userId: string, address: IAddress): number {
@@ -40,10 +40,12 @@ export class ShippingService implements IShippingService {
     // Ajustar baseado no CEP (simulação)
     const zipCode = address.zipCode.replace(/\D/g, '');
     if (zipCode.startsWith('01') || zipCode.startsWith('02')) {
-      baseCost += 5.00; // Zona central - mais caro
+      baseCost += 5.0; // Zona central - mais caro
     }
 
-    console.log(`🚚 Custo de frete calculado para ${address.city}/${address.state}: R$ ${baseCost.toFixed(2)}`);
+    console.log(
+      `🚚 Custo de frete calculado para ${address.city}/${address.state}: R$ ${baseCost.toFixed(2)}`,
+    );
     return baseCost;
   }
 
@@ -68,7 +70,7 @@ export class ShippingService implements IShippingService {
 
   async getShipment(shipmentId: string): Promise<IShipment> {
     const shipment = this.shipments.get(shipmentId);
-    
+
     if (!shipment) {
       throw new Error('Envio não encontrado');
     }
@@ -82,7 +84,7 @@ export class ShippingService implements IShippingService {
     shipmentData: Partial<IShipment>,
   ): Promise<IShipment> {
     const shipment = this.shipments.get(shipmentId);
-    
+
     if (!shipment) {
       throw new Error('Envio não encontrado');
     }
@@ -100,7 +102,7 @@ export class ShippingService implements IShippingService {
 
   async trackShipment(shipmentId: string): Promise<IShipment> {
     const shipment = this.shipments.get(shipmentId);
-    
+
     if (!shipment) {
       throw new Error('Envio não encontrado');
     }
@@ -108,7 +110,8 @@ export class ShippingService implements IShippingService {
     // Simular atualização de status baseado no tempo
     const now = new Date();
     const createdAt = new Date(shipment.createdAt);
-    const hoursSinceCreation = (now.getTime() - createdAt.getTime()) / (1000 * 60 * 60);
+    const hoursSinceCreation =
+      (now.getTime() - createdAt.getTime()) / (1000 * 60 * 60);
 
     let newStatus = shipment.status;
     if (hoursSinceCreation > 24 && shipment.status === 'pending') {
@@ -124,14 +127,21 @@ export class ShippingService implements IShippingService {
       console.log(`📦 Status do envio atualizado para: ${newStatus}`);
     }
 
-    console.log('✅ Rastreamento do envio:', shipmentId, 'Status:', shipment.status);
+    console.log(
+      '✅ Rastreamento do envio:',
+      shipmentId,
+      'Status:',
+      shipment.status,
+    );
     return shipment;
   }
 
   private generateTrackingCode(): string {
     // Gerar código de rastreamento no formato BR123456789
     const prefix = 'BR';
-    const number = Math.floor(Math.random() * 1000000000).toString().padStart(9, '0');
+    const number = Math.floor(Math.random() * 1000000000)
+      .toString()
+      .padStart(9, '0');
     return `${prefix}${number}`;
   }
 

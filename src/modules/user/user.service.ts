@@ -1,12 +1,14 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { IAddress, IUser } from 'src/interfaces/models';
-import { IUserService } from 'src/interfaces/services';
 import { PrismaService } from 'src/database/prisma.service';
+import BaseUserService from 'src/framework/abstract/user.abstract';
+import { IAddress, IUser } from 'src/interfaces/models';
 import { Role } from 'src/types';
 
 @Injectable()
-export class UserService implements IUserService {
-  constructor(private prisma: PrismaService) {}
+export class UserService extends BaseUserService {
+  constructor(private prisma: PrismaService) {
+    super();
+  }
 
   async createUser(
     userData: Omit<IUser, 'id' | 'createdAt' | 'updatedAt' | 'role'> & {
@@ -15,7 +17,7 @@ export class UserService implements IUserService {
   ): Promise<IUser> {
     // Criar endereço se fornecido
     let addressId: string | undefined;
-    
+
     if (userData.address) {
       const address = await this.prisma.address.create({
         data: {
@@ -48,7 +50,7 @@ export class UserService implements IUserService {
     });
 
     console.log('✅ Usuário criado no banco:', user.name);
-    
+
     return this.mapToIUser(user);
   }
 
@@ -76,7 +78,7 @@ export class UserService implements IUserService {
     });
 
     console.log(`✅ ${users.length} usuários encontrados no banco`);
-    return users.map(user => this.mapToIUser(user));
+    return users.map((user) => this.mapToIUser(user));
   }
 
   async updateUser(userId: string, userData: Partial<IUser>): Promise<IUser> {
@@ -112,7 +114,7 @@ export class UserService implements IUserService {
             country: userData.address.country,
           },
         });
-        
+
         await this.prisma.user.update({
           where: { id: userId },
           data: { addressId: address.id },
@@ -126,7 +128,8 @@ export class UserService implements IUserService {
     if (userData.email) updateData.email = userData.email;
     if (userData.dob) updateData.dob = userData.dob;
     if (userData.pfp) updateData.pfp = userData.pfp;
-    if (userData.identificationNumber) updateData.identificationNumber = userData.identificationNumber;
+    if (userData.identificationNumber)
+      updateData.identificationNumber = userData.identificationNumber;
     if (userData.phoneNumber) updateData.phoneNumber = userData.phoneNumber;
     if (userData.role) updateData.role = userData.role;
 
@@ -180,7 +183,9 @@ export class UserService implements IUserService {
     }
 
     if (!user.address) {
-      throw new NotFoundException(`Endereço não encontrado para usuário ${userId}`);
+      throw new NotFoundException(
+        `Endereço não encontrado para usuário ${userId}`,
+      );
     }
 
     console.log('✅ Endereço encontrado para usuário:', userId);
@@ -198,7 +203,7 @@ export class UserService implements IUserService {
       identificationNumber: user.identificationNumber,
       phoneNumber: user.phoneNumber,
       role: user.role as Role,
-      address: user.address ? this.mapToIAddress(user.address) : null as any,
+      address: user.address ? this.mapToIAddress(user.address) : (null as any),
       createdAt: user.createdAt.toISOString(),
       updatedAt: user.updatedAt.toISOString(),
     };

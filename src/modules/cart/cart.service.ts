@@ -1,11 +1,13 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { ICart, ICartItem, IProduct } from 'src/interfaces/models';
-import { ICartService } from 'src/interfaces/services';
 import { PrismaService } from 'src/database/prisma.service';
+import BaseCartService from 'src/framework/abstract/cart.abstract';
+import { ICart, ICartItem, IProduct } from 'src/interfaces/models';
 
 @Injectable()
-export class CartService implements ICartService {
-  constructor(private prisma: PrismaService) {}
+export class CartService extends BaseCartService {
+  constructor(private prisma: PrismaService) {
+    super();
+  }
 
   async addItemToCart(userId: string, itemData: any): Promise<ICart> {
     // Verificar se produto existe
@@ -206,7 +208,12 @@ export class CartService implements ICartService {
       },
     });
 
-    console.log('✅ Quantidade atualizada no carrinho:', itemId, 'para', quantity);
+    console.log(
+      '✅ Quantidade atualizada no carrinho:',
+      itemId,
+      'para',
+      quantity,
+    );
     return this.mapToICart(updatedCart!);
   }
 

@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
+import BaseOrderService from 'src/framework/abstract/order.abstract';
 import { IOrder } from 'src/interfaces/models';
-import { IOrderService } from 'src/interfaces/services';
 
 @Injectable()
-export class OrderService implements IOrderService {
+export class OrderService extends BaseOrderService {
   private orders: Map<string, IOrder> = new Map();
 
   async createOrder(
@@ -29,7 +29,7 @@ export class OrderService implements IOrderService {
 
   async getOrder(orderId: string): Promise<IOrder> {
     const order = this.orders.get(orderId);
-    
+
     if (!order) {
       throw new Error('Pedido não encontrado');
     }
@@ -38,9 +38,12 @@ export class OrderService implements IOrderService {
     return order;
   }
 
-  async updateOrder(orderId: string, orderData: Partial<IOrder>): Promise<IOrder> {
+  async updateOrder(
+    orderId: string,
+    orderData: Partial<IOrder>,
+  ): Promise<IOrder> {
     const order = this.orders.get(orderId);
-    
+
     if (!order) {
       throw new Error('Pedido não encontrado');
     }
@@ -58,28 +61,37 @@ export class OrderService implements IOrderService {
 
   async cancelOrder(orderId: string): Promise<void> {
     const order = this.orders.get(orderId);
-    
+
     if (!order) {
       throw new Error('Pedido não encontrado');
     }
 
     if (order.status === 'shipped' || order.status === 'delivered') {
-      throw new Error('Não é possível cancelar um pedido já enviado ou entregue');
+      throw new Error(
+        'Não é possível cancelar um pedido já enviado ou entregue',
+      );
     }
 
     order.status = 'cancelled';
     order.updatedAt = new Date().toISOString();
-    
+
     this.orders.set(orderId, order);
     console.log('✅ Pedido cancelado:', orderId);
   }
 
   async listOrdersByUser(userId: string): Promise<IOrder[]> {
     const userOrders = Array.from(this.orders.values())
-      .filter(order => order.userId === userId)
-      .sort((a, b) => new Date(b.orderDate || b.createdAt).getTime() - new Date(a.orderDate || a.createdAt).getTime());
+      .filter((order) => order.userId === userId)
+      .sort(
+        (a, b) =>
+          new Date(b.orderDate || b.createdAt).getTime() -
+          new Date(a.orderDate || a.createdAt).getTime(),
+      );
 
-    console.log(`✅ ${userOrders.length} pedidos encontrados para usuário:`, userId);
+    console.log(
+      `✅ ${userOrders.length} pedidos encontrados para usuário:`,
+      userId,
+    );
     return userOrders;
   }
 }

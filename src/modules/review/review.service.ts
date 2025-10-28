@@ -1,15 +1,23 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
-import { IReviewService } from 'src/interfaces/services';
-import { IReview } from 'src/interfaces/models';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from 'src/database/prisma.service';
+import BaseReviewService from 'src/framework/abstract/review.abstract';
+import { IReview } from 'src/interfaces/models';
 
 @Injectable()
-export class ReviewService implements IReviewService {
-  constructor(private prisma: PrismaService) {}
+export class ReviewService extends BaseReviewService {
+  constructor(private prisma: PrismaService) {
+    super();
+  }
 
   async addReview(productId: string, reviewData: any): Promise<IReview> {
     if (reviewData.rating < 1 || reviewData.rating > 5) {
-      throw new BadRequestException('Avaliação deve estar entre 1 e 5 estrelas');
+      throw new BadRequestException(
+        'Avaliação deve estar entre 1 e 5 estrelas',
+      );
     }
 
     // Verificar se produto existe
@@ -30,7 +38,12 @@ export class ReviewService implements IReviewService {
       },
     });
 
-    console.log('✅ Avaliação adicionada ao banco:', review.id, 'para produto:', productId);
+    console.log(
+      '✅ Avaliação adicionada ao banco:',
+      review.id,
+      'para produto:',
+      productId,
+    );
     return this.mapToIReview(review);
   }
 
@@ -40,7 +53,10 @@ export class ReviewService implements IReviewService {
       orderBy: { createdAt: 'desc' },
     });
 
-    console.log(`✅ ${reviews.length} avaliações encontradas para produto:`, productId);
+    console.log(
+      `✅ ${reviews.length} avaliações encontradas para produto:`,
+      productId,
+    );
     return reviews.map((review) => this.mapToIReview(review));
   }
 
@@ -48,18 +64,21 @@ export class ReviewService implements IReviewService {
     const existingReview = await this.prisma.review.findUnique({
       where: { id: reviewId },
     });
-    
+
     if (!existingReview) {
       throw new NotFoundException('Avaliação não encontrada');
     }
 
     if (reviewData.rating && (reviewData.rating < 1 || reviewData.rating > 5)) {
-      throw new BadRequestException('Avaliação deve estar entre 1 e 5 estrelas');
+      throw new BadRequestException(
+        'Avaliação deve estar entre 1 e 5 estrelas',
+      );
     }
 
     const updateData: any = {};
     if (reviewData.rating !== undefined) updateData.rating = reviewData.rating;
-    if (reviewData.comment !== undefined) updateData.comment = reviewData.comment;
+    if (reviewData.comment !== undefined)
+      updateData.comment = reviewData.comment;
 
     const updatedReview = await this.prisma.review.update({
       where: { id: reviewId },
@@ -74,7 +93,7 @@ export class ReviewService implements IReviewService {
     const review = await this.prisma.review.findUnique({
       where: { id: reviewId },
     });
-    
+
     if (!review) {
       throw new NotFoundException('Avaliação não encontrada');
     }

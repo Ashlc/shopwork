@@ -1,11 +1,17 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from 'src/database/prisma.service';
+import BaseProductService from 'src/framework/abstract/product.abstract';
 import { IProduct } from 'src/interfaces/models';
-import { IProductService } from 'src/interfaces/services';
 
 @Injectable()
-export class ProductService implements IProductService {
-  constructor(private prisma: PrismaService) {}
+export class ProductService extends BaseProductService {
+  constructor(private prisma: PrismaService) {
+    super();
+  }
 
   async addProduct(
     productData: Omit<IProduct, 'id' | 'createdAt' | 'updatedAt'>,
@@ -29,7 +35,12 @@ export class ProductService implements IProductService {
       },
     });
 
-    console.log('✅ Produto adicionado ao banco:', product.name, 'ID:', product.id);
+    console.log(
+      '✅ Produto adicionado ao banco:',
+      product.name,
+      'ID:',
+      product.id,
+    );
     return this.mapToIProduct(product);
   }
 
@@ -52,7 +63,7 @@ export class ProductService implements IProductService {
     });
 
     console.log(`✅ Encontrados ${products.length} produtos no banco`);
-    return products.map(product => this.mapToIProduct(product));
+    return products.map((product) => this.mapToIProduct(product));
   }
 
   async updateProduct(
@@ -66,17 +77,23 @@ export class ProductService implements IProductService {
       throw new BadRequestException('Preço deve ser maior que zero');
     }
 
-    if (productData.quantityInStock !== undefined && productData.quantityInStock < 0) {
+    if (
+      productData.quantityInStock !== undefined &&
+      productData.quantityInStock < 0
+    ) {
       throw new BadRequestException('Estoque não pode ser negativo');
     }
 
     const updateData: any = {};
     if (productData.name) updateData.name = productData.name;
-    if (productData.description !== undefined) updateData.description = productData.description;
+    if (productData.description !== undefined)
+      updateData.description = productData.description;
     if (productData.price !== undefined) updateData.price = productData.price;
     if (productData.category) updateData.category = productData.category;
-    if (productData.quantityInStock !== undefined) updateData.quantityInStock = productData.quantityInStock;
-    if (productData.imageUrl !== undefined) updateData.imageUrl = productData.imageUrl;
+    if (productData.quantityInStock !== undefined)
+      updateData.quantityInStock = productData.quantityInStock;
+    if (productData.imageUrl !== undefined)
+      updateData.imageUrl = productData.imageUrl;
 
     const updatedProduct = await this.prisma.product.update({
       where: { id: productId },
