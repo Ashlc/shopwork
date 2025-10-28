@@ -13,8 +13,11 @@ export class OrderService implements IOrderService {
       'id' | 'status' | 'orderDate' | 'createdAt' | 'updatedAt'
     >,
   ): Promise<IOrder> {
+    // Gerar ID único usando timestamp + número aleatório
+    const uniqueId = `order_${Date.now()}_${Math.floor(Math.random() * 1000000)}`;
+
     const order: IOrder = {
-      id: `order_${Date.now()}`,
+      id: uniqueId,
       ...orderData,
       status: 'pending',
       orderDate: new Date().toISOString(),
@@ -29,7 +32,7 @@ export class OrderService implements IOrderService {
 
   async getOrder(orderId: string): Promise<IOrder> {
     const order = this.orders.get(orderId);
-    
+
     if (!order) {
       throw new Error('Pedido não encontrado');
     }
@@ -40,7 +43,7 @@ export class OrderService implements IOrderService {
 
   async updateOrder(orderId: string, orderData: Partial<IOrder>): Promise<IOrder> {
     const order = this.orders.get(orderId);
-    
+
     if (!order) {
       throw new Error('Pedido não encontrado');
     }
@@ -58,7 +61,7 @@ export class OrderService implements IOrderService {
 
   async cancelOrder(orderId: string): Promise<void> {
     const order = this.orders.get(orderId);
-    
+
     if (!order) {
       throw new Error('Pedido não encontrado');
     }
@@ -69,7 +72,7 @@ export class OrderService implements IOrderService {
 
     order.status = 'cancelled';
     order.updatedAt = new Date().toISOString();
-    
+
     this.orders.set(orderId, order);
     console.log('✅ Pedido cancelado:', orderId);
   }
