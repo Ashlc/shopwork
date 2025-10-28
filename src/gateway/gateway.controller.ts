@@ -192,6 +192,11 @@ export class GatewayController {
     return this.gatewayService.confirmOrder(id);
   }
 
+  @Post('payments/callback/:id')
+  async processPaymentCallback(@Param('id') id: string) {
+    return this.gatewayService.processPaymentCallback(id);
+  }
+
   // ============================================================================
   // SHIPPING ENDPOINTS
   // ============================================================================

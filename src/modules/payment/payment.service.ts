@@ -7,30 +7,71 @@ import { PaymentMethod } from 'src/types';
 export class PaymentService implements IPaymentService {
   private payments: Map<string, IPayment> = new Map();
 
+  private paymentsMap: Map<string, { orderId: string; method: PaymentMethod }> = new Map();
+
   async openPaymentProcess(orderId: string, method: PaymentMethod): Promise<string> {
     // Simular abertura de processo de pagamento
     const paymentId = `pay_${Date.now()}`;
     
     console.log(`💳 Processo de pagamento aberto para pedido ${orderId} via ${method}`);
     
+    // Salvar associação paymentId -> orderId
+    this.paymentsMap.set(paymentId, { orderId, method });
+    
     // Simular diferentes URLs de pagamento baseado no método
+    // A URL será um endpoint local que simula o gateway de pagamento
+    const baseUrl = 'http://localhost:3000/api';
     let paymentUrl = '';
     switch (method) {
       case 'credit_card':
-        paymentUrl = `https://payment.example.com/credit/${paymentId}`;
+        paymentUrl = `${baseUrl}/payments/callback/${paymentId}?method=credit_card`;
         break;
       case 'pix':
-        paymentUrl = `https://payment.example.com/pix/${paymentId}`;
+        paymentUrl = `${baseUrl}/payments/callback/${paymentId}?method=pix`;
         break;
       case 'boleto':
-        paymentUrl = `https://payment.example.com/boleto/${paymentId}`;
+        paymentUrl = `${baseUrl}/payments/callback/${paymentId}?method=boleto`;
         break;
       default:
-        paymentUrl = `https://payment.example.com/generic/${paymentId}`;
+        paymentUrl = `${baseUrl}/payments/callback/${paymentId}?method=generic`;
     }
 
     console.log('✅ URL de pagamento gerada:', paymentUrl);
     return paymentUrl;
+  }
+
+  async simulatePaymentCallback(paymentId: string, success: boolean = true): Promise<{ paymentId: string; orderId: string; status: string }> {
+    const paymentInfo = this.paymentsMap.get(paymentId);
+    
+    if (!paymentInfo) {
+      throw new Error('Pagamento não encontrado');
+    }
+
+    // Criar registro de pagamento
+    const payment: IPayment = {
+      id: paymentId,
+      orderId: paymentInfo.orderId,
+      amount: 0, // Será atualizado quando o pedido for recuperado
+      userId: '', // Será atualizado quando o pedido for recuperado
+      paymentDate: new Date().toISOString(),
+      paymentMethod: paymentInfo.method,
+      status: success ? 'completed' : 'failed',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    this.payments.set(paymentId, payment);
+    
+    console.log(success 
+      ? `✅ Pagamento processado com sucesso: ${paymentId}` 
+      : `❌ Falha no processamento do pagamento: ${paymentId}`
+    );
+
+    return {
+      paymentId,
+      orderId: paymentInfo.orderId,
+      status: payment.status
+    };
   }
 
   async processPayment(paymentData: Omit<IPayment, 'id'>): Promise<IPayment> {

@@ -26,4 +26,10 @@ export class PaymentController {
   async refundPayment(@Param('id') id: string) {
     return this.paymentService.refundPayment(id);
   }
+
+  @Post('callback/:id')
+  async simulatePaymentCallback(@Param('id') id: string) {
+    const result = await this.paymentService.simulatePaymentCallback(id, true);
+    return result;
+  }
 }

@@ -398,6 +398,42 @@ export class GatewayService {
     return payment;
   }
 
+  async processPaymentCallback(paymentId: string) {
+    // 1. Processar o pagamento (simular callback do gateway)
+    const url = this.serviceDiscovery.getServiceUrl('payment');
+    const callbackResult = await firstValueFrom(
+      this.httpService.post(`${url}/payments/callback/${paymentId}`)
+    );
+
+    const { orderId, status } = callbackResult.data;
+
+    // 2. Atualizar status do pedido
+    if (status === 'completed') {
+      // Buscar o pedido para pegar os dados
+      const order = await this.getOrder(orderId);
+      
+      // Atualizar status do pedido para paid
+      await this.updateOrder(orderId, { 
+        status: 'paid',
+        paymentId 
+      });
+
+      // 3. Criar envio
+      await this.createShipment(orderId, {
+        userId: order.userId,
+        shippingMethod: 'standard',
+        estimatedDelivery: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // 7 dias
+      });
+
+      // 4. Enviar email de confirmação
+      await this.sendOrderConfirmation(order.userId, orderId);
+
+      console.log(`✅ Pedido ${orderId} confirmado e shipment criado`);
+    }
+
+    return callbackResult.data;
+  }
+
   async updateShipmentStatus(shipmentId: string, status: string) {
     const shipment = await this.updateShipment(shipmentId, { status });
 
