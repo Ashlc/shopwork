@@ -6,13 +6,13 @@ import { PaymentMethod } from 'src/types';
 export class PaymentController {
   constructor(private readonly paymentService: PaymentService) {}
 
-  @Post('process')
+  @Post('open')
   async openPaymentProcess(@Body() body: { orderId: string; method: PaymentMethod }) {
-    const paymentId = await this.paymentService.openPaymentProcess(body.orderId, body.method);
-    return { paymentId };
+    const paymentUrl = await this.paymentService.openPaymentProcess(body.orderId, body.method);
+    return { paymentUrl };
   }
 
-  @Post()
+  @Post('process')
   async processPayment(@Body() paymentData: any) {
     return this.paymentService.processPayment(paymentData);
   }

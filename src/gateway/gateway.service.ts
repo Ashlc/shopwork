@@ -214,11 +214,11 @@ export class GatewayService {
   // ============================================================================
   async openPaymentProcess(orderId: string, method: PaymentMethod): Promise<string> {
     const url = this.serviceDiscovery.getServiceUrl('payment');
-    const response = await firstValueFrom(this.httpService.post(`${url}/payments/process`, {
+    const response = await firstValueFrom(this.httpService.post(`${url}/payments/open`, {
       orderId,
       method,
     }));
-    return response.data.paymentId;
+    return response.data.paymentUrl;
   }
 
   async processPayment(paymentData: any): Promise<IPayment> {
@@ -372,14 +372,14 @@ export class GatewayService {
     const order = await this.createOrder(userId, orderData);
 
     // 6. Processar pagamento
-    const paymentId = await this.openPaymentProcess(order.id, method);
+    const paymentUrl = await this.openPaymentProcess(order.id, method);
 
     // 7. Limpar carrinho
     await this.clearCart(userId);
 
     return {
       order,
-      paymentId,
+      paymentUrl,
     };
   }
 

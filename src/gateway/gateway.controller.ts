@@ -168,8 +168,8 @@ export class GatewayController {
   // ============================================================================
   @Post('payments/process')
   async openPaymentProcess(@Body() body: { orderId: string; method: PaymentMethod }) {
-    const paymentId = await this.gatewayService.openPaymentProcess(body.orderId, body.method);
-    return { paymentId };
+    const paymentUrl = await this.gatewayService.openPaymentProcess(body.orderId, body.method);
+    return { paymentUrl };
   }
 
   @Post('payments')
